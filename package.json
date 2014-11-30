@@ -2,9 +2,10 @@
   "name": "sqlquest",
   "version": "0.0.0",
   "description": "A sql job runner/DSL",
-  "main": "lib/run.js",
+  "main": "./lib/run.js",
+  "bin": "./bin/sqlquest",
   "scripts": {
-    "prepublish": "cake build",
+    "prepublish": "cake build"
   },
   "author": "Anthony Grimes",
   "license": "BSD-2-Clause",
