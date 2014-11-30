@@ -1,3 +1,4 @@
+colors = require 'colors'
 opts = require 'nomnom'
   .script 'sqlquest'
   .option 'user', abbr: 'u', required: true, help: 'Database username'
@@ -8,19 +9,20 @@ opts = require 'nomnom'
   .parse()
 
 printHeader = (text) ->
-  console.log '########################################################'
-  console.log text
-  console.log '########################################################'
+  console.log '########################################################'.gray
+  console.log text.gray
+  console.log '########################################################'.gray
 
 printHeader "Beginning the #{opts.quest} quest!"
 
 try
   if opts.quest
     Quest = require "./quests/#{opts.quest}/#{opts.quest}"
+    new Quest(opts.host, opts.db, opts.user, opts.pass, opts._)
   else
     console.error "Need a quest to go on!"
 catch e
   if e.message == "Cannot find module '#{opts.quest}'"
     console.log "No such quest is available."
   else
-    new Quest opts.host, opts.db, opts.user, opts.pass, opts._
+    throw e
