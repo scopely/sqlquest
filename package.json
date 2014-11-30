@@ -1,0 +1,17 @@
+{
+  "name": "sqlquest",
+  "version": "0.0.0",
+  "description": "A sql job runner/DSL",
+  "main": "lib/run.js",
+  "scripts": {
+    "prepublish": "cake build",
+  },
+  "author": "Anthony Grimes",
+  "license": "BSD-2-Clause",
+  "dependencies": {
+    "pg": "~4.0.0",
+    "mustache": "~0.8.2",
+    "nomnom": "~1.8.1",
+    "coffee-script": "~1.8.0"
+  }
+}
