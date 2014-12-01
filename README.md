@@ -58,4 +58,3 @@ of the last query in the sql.
 ## TODO
 
 * Default implementation of `adventure` that just runs any sql file in `sql`
-* Prepared statements/templates
