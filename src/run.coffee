@@ -10,7 +10,7 @@ opts = require 'nomnom'
 
 printHeader = (text) ->
   console.log '########################################################'.gray
-  console.log text.gray
+  console.log text.gray.bold
   console.log '########################################################'.gray
 
 printHeader "Beginning the #{opts.quest} quest!"
