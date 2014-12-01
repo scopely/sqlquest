@@ -18,8 +18,8 @@ intend to contribute back to upstream – you may end up with nasty merge
 conflicts in the future.
 
 Quests (jobs) are just directories in `src/quests/` that contains coffeescript
-files and possibly `sql/` directory. Take a look at `src/quests/test` for a
-very trivial example.
+files and possibly `sql/` directory. Take a look at `src/quests/example` for a
+heavier example/demo.
 
 Each quest should at a minimum have a file called `<questname>.coffee`. This
 module should export one class that extends `Quest` from `../quest`. Quests
@@ -54,6 +54,15 @@ module.exports =
 
 Easy enough, right? Note that the result of each `sql` call is the result
 of the last query in the sql.
+
+You can even put mustache templates in your sql files! Just pass an object to
+fulfill the template as the second argument to `@sql`!
+
+```coffeescript
+@sql "SELECT * from {{{table}}};", table: 'schema.table'
+```
+
+For a heavier example, look at `src/quests/example`.
 
 ## TODO
 
