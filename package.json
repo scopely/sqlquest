@@ -10,7 +10,6 @@
   "author": "Anthony Grimes",
   "license": "BSD-2-Clause",
   "dependencies": {
-    "coffee-script": "~1.8.0",
     "colors": "^1.0.3",
     "fibers": "^1.0.2",
     "mustache": "~0.8.2",
@@ -21,6 +20,7 @@
   },
   "devDependencies": {
     "glob": "^4.2.2",
+    "coffee-script": "~1.8.0",
     "mkdirp": "^0.5.0"
   }
 }
