@@ -78,7 +78,3 @@ fulfill the template as the second argument to `@sql`!
 ```
 
 For a heavier example, look at `src/quests/example`.
-
-## TODO
-
-* Default implementation of `adventure` that just runs any sql file in `sql`
