@@ -17,6 +17,15 @@ sure that you don't make changes to sqlquest core downstream that you don't
 intend to contribute back to upstream – you may end up with nasty merge
 conflicts in the future.
 
+First thing you'll want to do is build the project. You should make sure you
+build every time you change/add quests.
+
+```
+$ cake build
+```
+
+This will build the project for ya.
+
 Quests (jobs) are just directories in `src/quests/` that contains coffeescript
 files and possibly `sql/` directory. Take a look at `src/quests/example` for a
 heavier example/demo.
@@ -24,6 +33,12 @@ heavier example/demo.
 Each quest should at a minimum have a file called `<questname>.coffee`. This
 module should export one class that extends `Quest` from `../quest`. Quests
 need to implement one method: `adventure`
+
+You can run quests via the `sqltest` command line tool.
+
+```
+$ bin/sqltest aquest -u dbuser -p dbpassword -H your.db.net -d dbname
+```
 
 Here is a very basic quest:
 
