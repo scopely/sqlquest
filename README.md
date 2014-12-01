@@ -57,6 +57,5 @@ of the last query in the sql.
 
 ## TODO
 
-* Easier error handling.
 * Default implementation of `adventure` that just runs any sql file in `sql`
 * Prepared statements/templates
