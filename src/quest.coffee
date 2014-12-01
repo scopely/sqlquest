@@ -23,7 +23,6 @@ class Quest
             console.error "An error occurred!".red.bold
             console.error err.message.red
 
-
   sql: (queries, view={}, cb) ->
     if typeof(queries) != 'string'
       sqlPath = path.join @questDir, 'sql', queries.file
