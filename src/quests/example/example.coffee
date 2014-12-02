@@ -30,9 +30,10 @@ class ExampleQuest extends Quest
       console.log "* #{person}".underline
     console.log()
 
-    @transaction =>
-      @sql "create temp table foo (x int);"
-      @sql "insert into table foo VALUES ('on no');"
+    @retry times: 3, wait: 5, =>
+      @transaction =>
+        @sql "create temp table foo (x int);"
+        @sql "insert into table foo VALUES ('on no');"
 
-      # this will never happen
-      @sql "create temp table bar as (select * from foo)"
+        # this will never happen
+        @sql "create temp table bar as (select * from foo)"

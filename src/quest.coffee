@@ -35,6 +35,29 @@ class Quest
     @sql """-- Ending transaction!
             COMMIT;"""
 
+  retry: (opts, cb) ->
+    if typeof(opts) != 'function'
+      {times, wait, okErrors} = opts
+    else
+      cb = opts
+      opts = {}
+    wait ?= 5000
+    times ?= 10
+    while true
+      try
+        return cb()
+      catch e
+        if not okErrors? or okErrors.some((regex) -> e.message.match regex)
+          if times == 'forever' or times > 0
+            console.error "Error occurred: #{e.message}".red.underline
+            console.log "Retrying in #{wait}ms. Retries left: #{times}".red.bold
+            console.log()
+            Sync.sleep(wait)
+            times -= 1
+          else
+            console.error "Out of lives... I give up.\n".red.underline
+            throw e
+
   sql: (queries, view={}, cb) ->
     if typeof(queries) != 'string'
       sqlPath = path.join @questDir, 'sql', queries.file
