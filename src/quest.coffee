@@ -21,7 +21,7 @@ class Quest
           @client.end()
           if err
             console.error "An error occurred!".red.bold
-            console.error err.message.red
+            console.error err.message.red.underline
 
   transaction: (cb) ->
     console.log "Beginning transaction".blue.underline
@@ -54,5 +54,7 @@ class Quest
       else
         console.time('Execution time') if @time
         result = @client.query.sync(@client, query)
-        console.timeEnd('Execution time') if @time
+        if @time
+          console.timeEnd('Execution time')
+          console.log()
     result
