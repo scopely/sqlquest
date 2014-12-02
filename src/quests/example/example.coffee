@@ -25,7 +25,7 @@ class ExampleQuest extends Quest
                  {name: 'Daniel', age: 21},
                  {name: 'Avram', age: 29}]
 
-    console.log "People older than 20:".underline
+    console.log "People older than 20:\n".underline
     for i, person of @getPeopleOlderThan 20
       console.log "* #{person}".underline
     console.log()

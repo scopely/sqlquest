@@ -24,12 +24,12 @@ class Quest
             console.error err.message.red.underline
 
   transaction: (cb) ->
-    console.log "Beginning transaction".blue.underline
+    console.log "Beginning transaction\n".blue.underline
     @sql "BEGIN;"
     try
       cb()
     catch e
-      console.error "An error occurred, rolling back".red.underline
+      console.error "An error occurred, rolling back\n".red.underline
       @sql "ROLLBACK;"
       throw e
     @sql """-- Ending transaction!
@@ -69,9 +69,7 @@ class Quest
       .filter (s) -> s
     result = null
     for _, query of queries
-      console.log()
       console.log "#{query};".green
-      console.log()
       if cb?
         @client.query(query, cb)
       else
@@ -79,5 +77,5 @@ class Quest
         result = @client.query.sync(@client, query)
         if @time
           console.timeEnd('Execution time')
-          console.log()
+      console.log()
     result
