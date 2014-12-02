@@ -56,7 +56,7 @@ class Quest
             times -= 1
           else
             console.error "Out of lives... I give up.".red.underline
-            raise e
+            throw e
 
   sql: (queries, view={}, cb) ->
     if typeof(queries) != 'string'
