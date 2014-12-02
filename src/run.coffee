@@ -1,3 +1,4 @@
+require 'coffee-script/register'
 colors = require 'colors'
 opts = require 'nomnom'
   .script 'sqlquest'

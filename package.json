@@ -2,14 +2,12 @@
   "name": "sqlquest",
   "version": "0.0.0",
   "description": "A sql job runner/DSL",
-  "main": "./lib/run.js",
+  "main": "./src/quest.coffee",
   "bin": "./bin/sqlquest",
-  "scripts": {
-    "prepublish": "cake build"
-  },
   "author": "Anthony Grimes",
   "license": "Apache-2.0",
   "dependencies": {
+    "coffee-script": "~1.8.0",
     "colors": "^1.0.3",
     "fibers": "^1.0.2",
     "mustache": "^0.8.2",
@@ -20,7 +18,6 @@
   },
   "devDependencies": {
     "glob": "^4.2.2",
-    "coffee-script": "~1.8.0",
     "mkdirp": "^0.5.0"
   }
 }
