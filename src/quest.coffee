@@ -7,7 +7,7 @@ Mustache = require 'mustache'
 
 module.exports =
 class Quest
-  constructor: (host, db, user, pass, extraArgs) ->
+  constructor: (host, db, user, pass, @time, extraArgs) ->
     @questDir = path.dirname module.parent.filename
     connString = "postgres://#{user}:#{pass}@#{host}/#{db}"
     @args = extraArgs
@@ -40,5 +40,7 @@ class Quest
       if cb?
         @client.query(query, cb)
       else
+        console.time('Execution time') if @time
         result = @client.query.sync(@client, query)
+        console.timeEnd('Execution time') if @time
     result

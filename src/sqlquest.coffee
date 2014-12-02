@@ -10,7 +10,8 @@ opts = require 'nomnom'
   .option 'host', abbr: 'H', required: true, help: 'Database host'
   .option 'db',   abbr: 'd', required: true, help: 'Database name'
   .option 'quests', abbr: 'q', help: 'Where to find quests'
-  .option 'time', abbr: 't', help: 'Print the runtime of each query'
+  .option('time', abbr: 't', flag: true, default: true,
+          help: 'Print the runtime of each query')
   .option 'quest', position: 0, help: 'Which quest to embark on!'
   .parse()
 
@@ -33,7 +34,7 @@ main = (opts) ->
 
     printHeader "Beginning the #{opts.quest} quest!"
 
-    new Quest(opts.host, opts.db, opts.user, opts.pass, opts._)
+    new Quest(opts.host, opts.db, opts.user, opts.pass, opts.time, opts._)
   catch e
     if e.message == "Cannot find module '#{questPath}'"
       console.error "No such quest is available."
