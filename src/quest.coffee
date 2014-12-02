@@ -7,7 +7,8 @@ Mustache = require 'mustache'
 
 module.exports =
 class Quest
-  constructor: (host, db, user, pass, @time, extraArgs) ->
+
+  constructor: (host, db, user, pass, @time, @name, extraArgs) ->
     @questDir = path.dirname module.parent.filename
     connString = "postgres://#{user}:#{pass}@#{host}/#{db}"
     @args = extraArgs
@@ -17,19 +18,19 @@ class Quest
         console.error "Couldn't connect!".red.bold
         console.error err.message.red
       else
-        Sync (=> @adventure()), (err, result) =>
+        Sync (=> @adventure?() or @sql file: "#{@name}.sql"), (err, result) =>
           @client.end()
           if err
             console.error "An error occurred!".red.bold
             console.error err.message.red.underline
 
   transaction: (cb) ->
-    console.log "Beginning transaction\n".blue.underline
+    console.log "Beginning transaction".blue.underline
     @sql "BEGIN;"
     try
       cb()
     catch e
-      console.error "An error occurred, rolling back\n".red.underline
+      console.error "An error occurred, rolling back".red.underline
       @sql "ROLLBACK;"
       throw e
     @sql """-- Ending transaction!
@@ -51,12 +52,11 @@ class Quest
           if times == 'forever' or times > 0
             console.error "Error occurred: #{e.message}".red.underline
             console.log "Retrying in #{wait}ms. Retries left: #{times}".red.bold
-            console.log()
             Sync.sleep(wait)
             times -= 1
           else
-            console.error "Out of lives... I give up.\n".red.underline
-            throw e
+            console.error "Out of lives... I give up.".red.underline
+            raise e
 
   sql: (queries, view={}, cb) ->
     if typeof(queries) != 'string'

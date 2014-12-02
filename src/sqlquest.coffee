@@ -34,7 +34,9 @@ main = (opts) ->
 
     printHeader "Beginning the #{opts.quest} quest!"
 
-    new Quest(opts.host, opts.db, opts.user, opts.pass, opts.time, opts._)
+    new Quest(opts.host, opts.db, opts.user,
+              opts.pass, opts.time, opts.quest,
+              opts._)
   catch e
     if e.message == "Cannot find module '#{questPath}'"
       console.error "No such quest is available."
