@@ -23,6 +23,18 @@ class Quest
             console.error "An error occurred!".red.bold
             console.error err.message.red
 
+  transaction: (cb) ->
+    console.log "Beginning transaction".blue.underline
+    @sql "BEGIN;"
+    try
+      cb()
+    catch e
+      console.error "An error occurred, rolling back".red.underline
+      @sql "ROLLBACK;"
+      throw e
+    @sql """-- Ending transaction!
+            COMMIT;"""
+
   sql: (queries, view={}, cb) ->
     if typeof(queries) != 'string'
       sqlPath = path.join @questDir, 'sql', queries.file
