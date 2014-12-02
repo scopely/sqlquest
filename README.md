@@ -17,14 +17,23 @@ sure that you don't make changes to sqlquest core downstream that you don't
 intend to contribute back to upstream – you may end up with nasty merge
 conflicts in the future.
 
-First thing you'll want to do is build the project. You should make sure you
-build every time you change/add quests.
+
+You'll need to install CoffeeScript before you start:
 
 ```
-$ cake build
+$ npm install coffee-script
 ```
 
-This will build the project for ya.
+First thing you'll want to do is install the project. You should make sure you
+do this every time you change/add quests.
+
+```
+$ npm install
+```
+
+This will install the project for ya.
+
+## Running Quests (outdated)
 
 Quests (jobs) are just directories in `src/quests/` that contains coffeescript
 files and possibly `sql/` directory. Take a look at `src/quests/example` for a
