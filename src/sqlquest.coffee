@@ -3,7 +3,20 @@ path = require 'path'
 fs = require 'fs'
 colors = require 'colors'
 read = require 'read'
-opts = require 'nomnom'
+nomnom = require 'nomnom'
+
+splitAt = (target, items) ->
+  index = items.indexOf target
+  if index > -1
+    beginning = items.slice(0, index)
+    end = items.slice(index + 1)
+    [beginning, end]
+  else
+    [items, []]
+
+[args, questOpts] = splitAt '--', process.argv.slice(2)
+
+opts = nomnom()
   .script 'sqlquest'
   .option 'user', abbr: 'u', required: true, help: 'Database username'
   .option 'pass', abbr: 'p', help: 'Database password'
@@ -13,9 +26,12 @@ opts = require 'nomnom'
   .option('time', abbr: 't', flag: true, default: true,
           help: 'Print the runtime of each query')
   .option 'quest', position: 0, help: 'Which quest to embark on!'
-  .parse()
+  .option '', help: "Everything after this is passed to the quest."
+  .parse(args)
 
-main = (opts) ->
+questOpts = nomnom().parse(questOpts)
+
+main = (opts, questOpts) ->
   printHeader = (text) ->
     console.log '########################################################'.gray
     console.log text.gray.bold
@@ -36,7 +52,7 @@ main = (opts) ->
 
     new Quest(opts.host, opts.db, opts.user,
               opts.pass, opts.time, opts.quest,
-              opts._)
+              questOpts)
   catch e
     if e.message == "Cannot find module '#{questPath}'"
       console.error "No such quest is available."
@@ -46,11 +62,11 @@ main = (opts) ->
 opts.pass ?= process.env.PGPASSWORD
 
 if opts.pass?
-  main opts
+  main opts, questOpts
 else
   read prompt: 'Password:', silent: true, (err, pass) ->
     if pass
       opts.pass = pass
-      main opts
+      main opts, questOpts
     else
       console.error "A password is necessary to venture forth.".red

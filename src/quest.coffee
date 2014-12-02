@@ -8,10 +8,9 @@ Mustache = require 'mustache'
 module.exports =
 class Quest
 
-  constructor: (host, db, user, pass, @time, @name, extraArgs) ->
+  constructor: (host, db, user, pass, @time, @name, @opts) ->
     @questDir = path.dirname module.parent.filename
     connString = "postgres://#{user}:#{pass}@#{host}/#{db}"
-    @args = extraArgs
     @client = new pg.Client(connString)
     @client.connect (err) =>
       if err
