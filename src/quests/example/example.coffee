@@ -28,6 +28,8 @@ class ExampleQuest extends Quest
     console.log "People older than 20:".underline
     for i, person of @getPeopleOlderThan 20
       console.log "* #{person}".underline
+    console.log()
+
     @transaction =>
       @sql "create temp table foo (x int);"
       @sql "insert into table foo VALUES ('on no');"
