@@ -161,12 +161,14 @@ class Quest
   #
   # Returns an {Object} with the results of the last query in the block of sql
   # or file passed. This object will have a `rows` property.
-  sql: (queries, view={}, cb) ->
+  sql: (queries, view, cb) ->
     if typeof(queries) != 'string'
       sqlPath = path.join @questDir, 'sql', queries.file
       console.log ">>".blue.bold, "#{sqlPath}".blue.bold
       queries = fs.readFileSync(sqlPath, encoding: 'utf-8')
-    queries = Mustache.render queries, view
+    if view
+      queries = Mustache.render queries, view
+    queries = queries
       .split ';'
       .map (s) -> s.trim()
       .filter (s) -> s
