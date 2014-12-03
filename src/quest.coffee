@@ -184,7 +184,7 @@ class Quest
           if trimWhitespace and typeof(value) == 'string'
             value = value.trim()
           else
-            value
+            value ?= ''
 
       table.push.apply table, values
       console.log table.toString()
