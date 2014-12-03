@@ -83,7 +83,7 @@ class Quest
   # ## Examples
   #
   # ```coffee
-  # @transaction ->
+  # @transaction =>
   #   @sql file: 'intransaction.sql'
   # ```
   #
@@ -117,14 +117,14 @@ class Quest
   # Retry up to 10 times with 5000 millisecond pauses.
   #
   # ```coffee
-  # @retry ->
+  # @retry =>
   #   @sql file: 'foo.sql'
   # ```
   #
   # Retry with your own rules
   #
   # ```coffee
-  # @retry times: 5, wait: 10000, okErrors: [/concurrent transaction/] ->
+  # @retry times: 5, wait: 10000, okErrors: [/concurrent transaction/] =>
   #   @sql file: 'intransaction.sql'
   # ```
   #
