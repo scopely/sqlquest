@@ -17,7 +17,8 @@ class Quest
         console.error "Couldn't connect!".red.bold
         console.error err.message.red
       else
-        Sync (=> @adventure?() or @sql file: "#{@name}.sql"), (err, result) =>
+        @adventure ?= => @sql file: "#{@name}.sql"
+        Sync (=> @adventure()), (err, result) =>
           @client.end()
           if err
             console.error "An error occurred!".red.bold
