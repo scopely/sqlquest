@@ -71,6 +71,8 @@ class Quest
           if err
             console.error "An error occurred!".red.bold
             console.error err.message.red.underline
+            console.error()
+            throw err
 
   # Public: Run a function inside of a db transaction
   #
