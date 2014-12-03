@@ -34,7 +34,7 @@ files, `sql/` directory.
 You can run quests like so:
 
 ```
-$ sqlquest awesomequest
+$ ./sqlquest awesomequest
 ```
 
 This will run the quest in `quests/awesomequest/`.
@@ -74,7 +74,7 @@ class AwesomeQuest extends Quest
 Now you can run your **awesome** quest like so:
 
 ```
-$ sqlquest awesomequest -u myuser -H my.db.com -d mydb -- --min 2
+$ ./sqlquest awesomequest -u myuser -H my.db.com -d mydb -- --min 2
 ```
 
 You should now see sqlquest running each block of sql in your `awesome.sql` file
