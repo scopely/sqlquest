@@ -175,7 +175,7 @@ class Quest
       .map (s) -> s.trim()
       .filter (s) -> s
     result = null
-    for _, query of queries
+    for i, query of queries
       console.log "#{query};".green
       if cb?
         @client.query(query, cb)
