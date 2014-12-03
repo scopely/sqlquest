@@ -168,6 +168,23 @@ certain matching error messages.
   ...
 ```
 
+### little bobby tables
+
+You probably want to see the results of queries sometimes. It's not trivial to
+output them in a readable way.
+
+
+
+
+
+Nah, I'm just kidding, we got something for that too:
+
+```coffee
+@table @sql(file: 'foo.sql')
+```
+
+That'll output the results as a table. Just like dat.
+
 ### All together now!
 
 ```coffee
@@ -179,5 +196,5 @@ module.exports =
       @retry times: 5, wait: 2000, okErrors: [/my silly error/], =>
         @transaction =>
           @sql file: 'foo.sql', {foo: 1, bar: 2}
-          @sql file: 'bar.sql'
+          @table @sql(file: 'bar.sql')
 ```

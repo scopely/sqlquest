@@ -6,6 +6,7 @@ path = require 'path'
 pg = require 'pg'
 colors = require 'colors'
 Mustache = require 'mustache'
+Table = require 'cli-table'
 
 module.exports =
 
@@ -152,6 +153,41 @@ class Quest
           else
             console.error "Out of lives... I give up.".red.underline
             throw e
+
+  # Public: Print out rows as a table.
+  #
+  # Header, row, row, row your boat gently down the stream, merily, merily,
+  # merily tables are such a dream.
+  #
+  # * `sqlResult`: Result {Object} from a call to {Quest::sql}.
+  # * `opts`: (optional) An {Object} of options.
+  #   * `trimWhitespace`: {Boolean} indicating if we should trim excess
+  #     whitespace from rows. Defaults to true. Unbearable otherwise.
+  #
+  # ## Examples
+  #
+  # ```coffee
+  # @table @sql(file: 'foo.sql')
+  # ```
+  table: (sqlResult, {trimWhitespace}={}) ->
+    trimWhitespace ?= true
+
+    if sqlResult.rows
+      columns = (field.name for field in sqlResult.fields)
+      opts = head: columns
+      table = new Table(opts)
+
+      # Get values, ensuring ordering is the same as our columns.
+      values = sqlResult.rows.map (val) ->
+        columns.map (column) ->
+          value = val[column]
+          if trimWhitespace and typeof(value) == 'string'
+            value = value.trim()
+          else
+            value
+
+      table.push.apply table, values
+      console.log table.toString()
 
   # Public: Run sql code in a string or file, fulfilling mustache templates.
   #
