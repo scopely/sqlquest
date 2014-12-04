@@ -1,5 +1,5 @@
 # And here's a more detailed example.
-Quest = require '../../quest'
+Quest = require '../../src/quest'
 
 module.exports =
 class ExampleQuest extends Quest
