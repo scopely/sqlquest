@@ -14,7 +14,7 @@ module.exports =
 #
 # {Quest} is the important part of the equation. Its methods make up the DSL
 # that makes sqlquest special and powerful. Extend this class and implement the
-# {{Quest::adventure}} method to create a quest. # When a subclass of {Quest} is
+# {{Quest::adventure}} method to create a quest. When a subclass of {Quest} is
 # instantiated, it runs its {{Quest::adventure}} method inside of a fiber with
 # [node-sync](https://github.com/ybogdanov/node-sync). The provided methods are
 # synchronous by default, and this is a core part of what makes the {Quest} DSL
