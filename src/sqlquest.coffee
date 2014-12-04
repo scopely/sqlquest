@@ -42,6 +42,32 @@ opts = nomnom()
 # their command line args.
 questOpts = nomnom().parse(questOpts)
 
+# Private: Find a quest board somewhere on Pandora.
+#
+# Looks up a {Quest} in the `quests` directory. If it isn't found, but the
+# directory exists with a `sql/` subfolder containing a sql file of the same
+# name, instantiate the default Quest class.
+#
+# * `quests`: {String} path to the directory containing quests. If `null`,
+#             makes a relatively reasonable guess that it is 'quests'
+# * `quest`: {String} quest to look for.
+#
+# Returns a {Quest} or throws an {Error}.
+findQuest = (quests, quest) ->
+  quests = path.resolve (quests or 'quests')
+  questPath = "#{quests}/#{quest}/#{quest}"
+  try
+    [questPath, require questPath]
+  catch e
+    if e.message.indexOf("Cannot find module") > -1
+      sqlPath = path.join path.dirname(questPath), 'sql', "#{quest}.sql"
+      if fs.existsSync(sqlPath)
+        [questPath, require './quest']
+      else
+        throw e
+    else
+      throw e
+
 # Private: Entry point function.
 #
 # Tries to find and run the specified quest. Handle errors if
@@ -56,27 +82,19 @@ main = (opts, questOpts) ->
     console.log '########################################################'.gray
 
   if opts.quests
+    # Path to quests was passed in
     quests = path.resolve(opts.quests)
   else
+    # Path to quests wasn't passed in, assume it's in the current directory.
     quests = path.resolve('quests')
-    if not fs.existsSync(quests)
-      quests = "./quests"
 
-  try
-    questPath = "#{quests}/#{opts.quest}/#{opts.quest}"
-    Quest = require questPath
+  [questPath, Quest] = findQuest(quests, opts.quest)
 
-    printHeader "Beginning the #{opts.quest} quest!"
+  printHeader "Beginning the #{opts.quest} quest!"
 
-    # Instantiate quest, which runs `adventure`.
-    new Quest(opts.host, opts.db, opts.user,
-              opts.pass, opts.time, opts.quest,
-              questOpts)
-  catch e
-    if e.message == "Cannot find module '#{questPath}'"
-      console.error "No such quest is available."
-    else
-      throw e
+  # Instantiate quest, which runs `adventure`.
+  quest = new Quest(opts.host, opts.db, opts.user, opts.pass,
+                    path.dirname(questPath), opts.time, questOpts)
 
 # If opts wasn't passed on the command line, set it to the PGPASSWORD
 # environment variable.

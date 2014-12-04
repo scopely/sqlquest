@@ -22,6 +22,9 @@ module.exports =
 # queries synchronous so that you can author your SQL quests (jobs) in a clean,
 # easy, readable way.
 #
+# If instantiated with no adventure method, defaults to just trying to run a sql
+# script of the quest's name in the quest's sql directory, with options passed.
+#
 # ## Examples
 #
 # The simplest example is a completely blank implementation
@@ -57,16 +60,17 @@ class Quest
   # * `time`: {Boolean} Set to false to not print execution time of each quury.
   # * `name`: {String} Quest name (same as passed on the command line).
   # * `opts`: {Object} Parsed command line args for the quest.
-  constructor: (host, db, user, pass, @time, @name, @opts) ->
-    @questDir = path.dirname module.parent.filename
+  constructor: (host, db, user, pass, @questPath, @time, @opts) ->
     connString = "postgres://#{user}:#{pass}@#{host}/#{db}"
+    @name = path.basename(@questPath)
+    @sqlPath = path.join @questPath, 'sql'
     @client = new pg.Client(connString)
+    @setAdventure()
     @client.connect (err) =>
       if err
         console.error "Couldn't connect!".red.bold
         console.error err.message.red
       else
-        @adventure ?= => @sql file: "#{@name}.sql"
         Sync (=> @adventure()), (err, result) =>
           @client.end()
           if err
@@ -74,6 +78,17 @@ class Quest
             console.error err.message.red.underline
             console.error()
             throw err
+
+  # Private: Setup the {Quest::adventure} function.
+  #
+  # Does nothing if {Quest::adventure} is implemented, otherwise checks to see
+  # if there is a `<quest>/sql/<quest>.sql` file and if so, sets a default
+  # method to run it with passed options and render the results as a table.
+  # If neither of those things are true, throw an error.
+  setAdventure: ->
+    @adventure ?= =>
+      console.log "No quest module. Defaulting to running #{@name}.sql.".bold
+      @table @sql(file: "#{@name}.sql", @opts)
 
   # Public: Run a function inside of a db transaction
   #
@@ -201,7 +216,7 @@ class Quest
   # or file passed. This object will have a `rows` property.
   sql: (queries, view, cb) ->
     if typeof(queries) != 'string'
-      sqlPath = path.join @questDir, 'sql', queries.file
+      sqlPath = path.join @sqlPath, queries.file
       console.log ">>".blue.bold, "#{sqlPath}".blue.bold
       queries = fs.readFileSync(sqlPath, encoding: 'utf-8')
     if view
