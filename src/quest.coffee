@@ -238,7 +238,7 @@ class Quest
       sqlPath = path.join @sqlPath, queries.file
       console.log ">>".blue.bold, "#{sqlPath}".blue.bold if queries.file
       rawQueries = queries.text or fs.readFileSync(sqlPath, encoding: 'utf-8')
-      queries = render rawQueries, view
+    queries = render rawQueries ? queries, view
     if split
       queries = new Splitter().split queries
     result = null
