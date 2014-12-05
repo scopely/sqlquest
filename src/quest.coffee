@@ -196,8 +196,7 @@ class Quest
   # ```
   table: (sqlResult, {trimWhitespace}={}) ->
     trimWhitespace ?= true
-
-    if sqlResult.rows
+    if sqlResult.rows.length > 0
       columns = (field.name for field in sqlResult.fields)
       opts = head: columns
       table = new Table(opts)
@@ -213,6 +212,8 @@ class Quest
 
       table.push.apply table, values
       console.log table.toString()
+    else
+      console.log "Nothing to output.".gray
 
   # Public: Run sql code in a string or file, fulfilling mustache templates.
   #
