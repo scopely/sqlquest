@@ -38,7 +38,7 @@ class ExampleQuest extends Quest
     console.log()
 
     # Retry a transaction until it succeeds or fails 3 times.
-    @retry times: 3, wait: 5, =>
+    @retry times: 3, wait: 5000, =>
       @transaction =>
         @sql "create temp table foo (x int);"
         @sql "insert into table foo VALUES ('on no');"
