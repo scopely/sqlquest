@@ -209,6 +209,33 @@ and it'll execute the sql file rendering embedded mustaches with the options you
 pass after `--`. The results of the last query, if there are any, will be
 outputted as a table.
 
+## Splitting Queries
+
+When you use sqlquest, you'll notice that it is somehow splitting even large
+sql files into chunks and timing each individual query. This is because sqlquest
+has support for hitting an API to split SQL into its individual queries.
+
+Why do we use an external service? Well, because there aren't any good node libs
+for parsing and dealing with sql code, and there was a better library written in
+Python with a already running API behind it. I'd rather not have to make this
+project depend on Python directly, so this seemed like a nice compromise.
+
+The service used by default is [sqlformat.org](http://sqlformat.org), but this
+is entirely configurable. sqlformat has an IP-based API limit of 500 requests
+per hour. I cannot vouch for the security of this API. I plan to implement an
+open source server based on the underlying Python library soon.
+
+### Server Spec
+
+Just implement an endpoint that takes a POST with a `sql` form parameter
+containing a string of sql. It should return, in json:
+
+```json
+{
+  "result" [query1, query2, ...]
+}
+```
+
 ## Config
 
 You can specify any of sqlquest's options in a `config.toml` file, or pass
