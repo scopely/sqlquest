@@ -4,6 +4,8 @@ fs = require 'fs'
 colors = require 'colors'
 read = require 'read'
 nomnom = require 'nomnom'
+toml = require 'toml'
+_ = require 'underscore'
 
 # Private: Split a list the first instance of an element
 #
@@ -22,21 +24,46 @@ splitAt = (target, items) ->
   else
     [items, []]
 
+# Private: Merge toml config at a path with some opts.
+#
+# If `tomlPath` exists, read it and merge the resulting object with opts.
+#
+# * `tomlPath`: {String} to a possible toml config file.
+# * `opts`: {Object} of parsed command line options.
+#
+# Returns an {Object} of the merged config.
+mergeConfig = (tomlPath, opts) ->
+  if tomlPath and fs.existsSync tomlPath
+    _.extend toml.parse(fs.readFileSync(tomlPath)), opts
+  else
+    opts
+
 # Separate all args after `--` so we can pass those on to the quest.
 [args, questOpts] = splitAt '--', process.argv.slice(2)
 
 opts = nomnom()
   .script 'sqlquest'
-  .option 'user', abbr: 'u', required: true, help: 'Database username'
+  .option 'user', abbr: 'u', help: 'Database username'
   .option 'pass', abbr: 'p', help: 'Database password'
-  .option 'host', abbr: 'H', required: true, help: 'Database host'
-  .option 'db',   abbr: 'd', required: true, help: 'Database name'
+  .option 'host', abbr: 'H', help: 'Database host'
+  .option 'db',   abbr: 'd', help: 'Database name'
   .option 'quests', abbr: 'q', help: 'Where to find quests'
-  .option('time', abbr: 't', flag: true, default: true,
-          help: 'Print the runtime of each query')
+  .option('config',
+    abbr: 'c',
+    default: 'config.toml',
+    help: 'Read config from this file'
+  )
+  .option('time',
+    abbr: 't',
+    flag: true,
+    default: true
+    help: 'Print the runtime of each query'
+  )
   .option 'quest', position: 0, help: 'Which quest to embark on!'
   .option '', help: "Everything after this is passed to the quest."
   .parse(args)
+
+opts = mergeConfig(opts.config, opts)
 
 # Just throw it at the wall. Should probably let quests override how they handle
 # their command line args.
