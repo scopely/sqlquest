@@ -32,7 +32,7 @@ class ExampleQuest extends Quest
                  {name: 'Avram', age: 29}]
 
     # We have node-colors so you can use its String.prototype monkeypatches.
-    console.log "People older than 20:\n".underline
+    console.log "People older than 20:".underline
     for i, person of @getPeopleOlderThan 20
       console.log "* #{person}".underline
     console.log()
