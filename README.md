@@ -216,7 +216,7 @@ outputted as a table.
 
 ## Example Output
 
-![example picture thing](https://dl.dropboxusercontent.com/s/yiusjpca873vyl8/2014-12-04%20at%2011.32%20PM%202x.png?dl=0)
+![example picture thing](https://dl.dropboxusercontent.com/s/tldoycyvpai33c1/2014-12-05%20at%2012.04%20AM%202x.png?dl=0)
 
 ## Splitting Queries
 
