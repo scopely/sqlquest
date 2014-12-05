@@ -3,7 +3,7 @@
 Sync = require 'sync'
 fs = require 'fs'
 path = require 'path'
-pg = require 'pg'
+pg = require('pg').native
 colors = require 'colors'
 Mustache = require 'mustache'
 Table = require 'cli-table'
