@@ -245,6 +245,11 @@ passing `split: false`:
      split: false
 ```
 
+### Supported SQL DBs
+
+* Postgres
+* Redshift (written for usage here)
+
 ## Config
 
 You can specify any of sqlquest's options in a `config.toml` file, or pass
