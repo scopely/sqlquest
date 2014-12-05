@@ -245,7 +245,7 @@ class Quest
       queries = new Splitter().split queries
     result = null
     for i, query of queries
-      console.log query.green
+      console.log "\n#{query}\n".green
       if cb?
         @client.query(query, cb)
       else
