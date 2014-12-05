@@ -51,6 +51,10 @@ opts = nomnom()
                                      (postgres://user:pass@host:port/db)"""
   .option 'db', abbr: 'd', help: 'Database name'
   .option 'quests', abbr: 'q', help: 'Where to find quests'
+  .option('splitter',
+    abbr: 's',
+    default: 'http://sqlformat.org/api/v1/split',
+    help: 'Splitter API URL to use')
   .option('config',
     abbr: 'c',
     default: 'config.toml',

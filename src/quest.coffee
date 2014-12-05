@@ -67,10 +67,13 @@ class Quest
   #   * `user`: {String} Database user.
   #   * `pass`: {String} Database password.
   #   * `time`: {Boolean} Set to false to not print execution time of queries.
+  #   * `splitter`: {String} URL to hit to split sql.
   # * `questPath`: {String} path to this quest.
   # * `questOpts`: {Object} Parsed command line args for the quest.
-  constructor: ({host, port, db, user, pass, url, time}, @questPath, @opts) ->
+  constructor: ({host, port, db, user, pass, url, time, splitter},
+                @questPath, @opts) ->
     connString = url ? "postgres://#{user}:#{pass}@#{host}:#{port}/#{db}"
+    @splitter = splitter
     @time = time
     @name = path.basename(@questPath)
     @sqlPath = path.join @questPath, 'sql'
@@ -245,7 +248,7 @@ class Quest
       rawQueries = queries.text or fs.readFileSync(sqlPath, encoding: 'utf-8')
     queries = render rawQueries ? queries, view
     if split
-      queries = new Splitter().split queries
+      queries = new Splitter(@splitter).split queries
     result = null
     for i, query of queries
       console.log "\n#{query}\n".green
