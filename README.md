@@ -27,9 +27,8 @@ $ ln -s node_modules/.bin/sqlquest sqlquest
 With this symlink, you can run sqlquest from the top level of your project.
 
 Create a directory called `quests/`. This is where you'll put all your quests.
-Each quest is a directory (the name of the quest) with at a minimum a `.coffee`
-file of the same name as the quest and, if your quest involves separate sql
-files, `sql/` directory.
+Each quest is a directory (the name of the quest) with at a minimum either a
+`.{coffee,js}` file or a `sql/<questname>.sql` file.
 
 You can run quests like so:
 
