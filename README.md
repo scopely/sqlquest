@@ -214,6 +214,10 @@ and it'll execute the sql file rendering embedded mustaches with the options you
 pass after `--`. The results of the last query, if there are any, will be
 outputted as a table.
 
+## Example Output
+
+![example picture thing](https://dl.dropboxusercontent.com/s/yiusjpca873vyl8/2014-12-04%20at%2011.32%20PM%202x.png?dl=0)
+
 ## Splitting Queries
 
 When you use sqlquest, you'll notice that it is somehow splitting even large
