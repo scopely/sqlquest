@@ -208,3 +208,14 @@ quest's `sql/` directory called `<questname>.sql`. You can now run this quest
 and it'll execute the sql file rendering embedded mustaches with the options you
 pass after `--`. The results of the last query, if there are any, will be
 outputted as a table.
+
+## Config
+
+You can specify any of sqlquest's options in a `config.toml` file, or pass
+`--config` to where the config is.
+
+```toml
+host = "foo.db.com"
+user = "me"
+...
+```
