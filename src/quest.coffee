@@ -65,7 +65,8 @@ class Quest
   # * `db`: {String} Name of the database.
   # * `user`: {String} Database user.
   # * `pass`: {String} Database password.
-  # * `time`: {Boolean} Set to false to not print execution time of each quury.
+  # * `time`: {Boolean} Set to false to not print execution time of each query.
+  # * `questPath`: {String} path to this quest.
   # * `name`: {String} Quest name (same as passed on the command line).
   # * `opts`: {Object} Parsed command line args for the quest.
   constructor: (host, db, user, pass, @questPath, @time, @opts) ->
