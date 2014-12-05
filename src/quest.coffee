@@ -61,16 +61,17 @@ class Quest
 
   # Private: Construct a quest instance.
   #
-  # * `host`: {String} Hostname of the database.
-  # * `db`: {String} Name of the database.
-  # * `user`: {String} Database user.
-  # * `pass`: {String} Database password.
-  # * `time`: {Boolean} Set to false to not print execution time of each query.
+  # * `cliOption`: {Object} of command line options + config:
+  #   * `host`: {String} Hostname of the database.
+  #   * `db`: {String} Name of the database.
+  #   * `user`: {String} Database user.
+  #   * `pass`: {String} Database password.
+  #   * `time`: {Boolean} Set to false to not print execution time of queries.
   # * `questPath`: {String} path to this quest.
-  # * `name`: {String} Quest name (same as passed on the command line).
-  # * `opts`: {Object} Parsed command line args for the quest.
-  constructor: (host, db, user, pass, @questPath, @time, @opts) ->
-    connString = "postgres://#{user}:#{pass}@#{host}/#{db}"
+  # * `questOpts`: {Object} Parsed command line args for the quest.
+  constructor: ({host, port, db, user, pass, url, time}, @questPath, @opts) ->
+    connString = url ? "postgres://#{user}:#{pass}@#{host}:#{port}/#{db}"
+    @time = time
     @name = path.basename(@questPath)
     @sqlPath = path.join @questPath, 'sql'
     @client = new pg.Client(connString)

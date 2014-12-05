@@ -44,9 +44,12 @@ mergeConfig = (tomlPath, opts) ->
 opts = nomnom()
   .script 'sqlquest'
   .option 'user', abbr: 'u', help: 'Database username'
-  .option 'pass', abbr: 'p', help: 'Database password'
+  .option 'pass', abbr: 'P', help: 'Database password'
   .option 'host', abbr: 'H', help: 'Database host'
-  .option 'db',   abbr: 'd', help: 'Database name'
+  .option 'port', abbr: 'p', help: 'Database port', default: 5432
+  .option 'url', abbr: 'U', help: """Connection URL:
+                                     (postgres://user:pass@host:port/db)"""
+  .option 'db', abbr: 'd', help: 'Database name'
   .option 'quests', abbr: 'q', help: 'Where to find quests'
   .option('config',
     abbr: 'c',
@@ -120,14 +123,13 @@ main = (opts, questOpts) ->
   printHeader "Beginning the #{opts.quest} quest!"
 
   # Instantiate quest, which runs `adventure`.
-  quest = new Quest(opts.host, opts.db, opts.user, opts.pass,
-                    path.dirname(questPath), opts.time, questOpts)
+  quest = new Quest(opts, path.dirname(questPath), questOpts)
 
 # If opts wasn't passed on the command line, set it to the PGPASSWORD
 # environment variable.
 opts.pass ?= process.env.PGPASSWORD
 
-if opts.pass?
+if opts.pass ? opts.url?
   main opts, questOpts
 else
   # No password was passed and no environment variable exists. Prompt
