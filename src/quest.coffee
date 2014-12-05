@@ -212,7 +212,9 @@ class Quest
             value.trim()
           else
             if value instanceof Date
-              value.toString()
+              value = value.toString()
+              match = value.match /(.*)\w{3}-\d{4} \(\w+\)$/
+              match[1] or value
             else
               value ? ''
 
