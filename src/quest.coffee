@@ -9,6 +9,7 @@ Mustache = require 'mustache'
 Table = require 'cli-table'
 Splitter = require './split'
 
+# Private: Render text with a view, or return text if view isn't a thing.
 render = (text, view) ->
   if view
     Mustache.render text, view
