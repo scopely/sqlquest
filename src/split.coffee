@@ -38,4 +38,4 @@ class Splitter
         name: "SplitError"
         status: response.statusCode
         message: body
-    JSON.parse(body).result
+    JSON.parse(body).result.filter (s) -> s
