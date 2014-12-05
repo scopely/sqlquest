@@ -236,6 +236,16 @@ containing a string of sql. It should return, in json:
 }
 ```
 
+## Turning It Off
+
+You can make `@sql` not split by using the first-arg-is-options format and
+passing `split: false`:
+
+```coffee
+@sql text: "SELECT * FROM bar;SELECT * FROM foo;",
+     split: false
+```
+
 ## Config
 
 You can specify any of sqlquest's options in a `config.toml` file, or pass
