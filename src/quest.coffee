@@ -206,9 +206,12 @@ class Quest
         columns.map (column) ->
           value = val[column]
           if trimWhitespace and typeof(value) == 'string'
-            value = value.trim()
+            value.trim()
           else
-            value ?= ''
+            if value instanceof Date
+              value.toString()
+            else
+              value ? ''
 
       table.push.apply table, values
       console.log table.toString()
