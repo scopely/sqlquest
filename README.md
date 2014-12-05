@@ -237,7 +237,7 @@ containing a string of sql. It should return, in json:
 
 ```json
 {
-  "result" [query1, query2, ...]
+  "result": [query1, query2, ...]
 }
 ```
 
