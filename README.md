@@ -76,6 +76,12 @@ Now you can run your **awesome** quest like so:
 $ ./sqlquest awesomequest -u myuser -H my.db.com -d mydb -- --min 2
 ```
 
+or
+
+```
+$ ./sqlquest awesomequest --url postgres://myuser:mypass@my.db.com/mydb -- --min 2
+```
+
 You should now see sqlquest running each block of sql in your `awesome.sql` file
 one by one, outputting the queries and their execution times. Since we passed an
 object as the second arg to `@sql` the sql is assumed to contain mustache
