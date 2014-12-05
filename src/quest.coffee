@@ -7,6 +7,13 @@ pg = require 'pg'
 colors = require 'colors'
 Mustache = require 'mustache'
 Table = require 'cli-table'
+Splitter = require './split'
+
+render = (text, view) ->
+  if view
+    Mustache.render text, view
+  else
+    text
 
 module.exports =
 
@@ -206,28 +213,35 @@ class Quest
 
   # Public: Run sql code in a string or file, fulfilling mustache templates.
   #
-  # * `queries`: {String} with sql code or an {Object} with a `file` property.
-  #   If a `file` is passed, look for it in the quest's `sql/` directory.
+  # * `queries`: {String} with sql code or an {Object}. If it is an object, it
+  #   can have the following properties:
+  #     * `text`: {String} of sql to execute.
+  #     * `file`: {String} filename of a file in the quest's `sql` directory.
+  #     * `split`: {Boolean} split the sql queries into chunks using an API.
+  #       This allows timing of individual queries, as well as more granular
+  #       error handling. `true` by default.
   # * `view`: (optional) {Object} to fill in a mustache template with.
-  # * `cb`: Use a callback rather than be synchronous. NOT RECOMMENDED UNLESS
-  #   YOU KNOW PRECISELY WHAT YOU'RE DOING.
+  # * `cb`: (optional) Use a callback rather than be synchronous. NOT
+  #   RECOMMENDED UNLESS YOU KNOW PRECISELY WHAT YOU'RE DOING.
   #
   # Returns an {Object} with the results of the last query in the block of sql
   # or file passed. This object will have a `rows` property.
   sql: (queries, view, cb) ->
+    split = true
+    if view instanceof Function
+      cb = view
+      view = null
     if typeof(queries) != 'string'
+      split = queries.split if queries.split?
       sqlPath = path.join @sqlPath, queries.file
-      console.log ">>".blue.bold, "#{sqlPath}".blue.bold
-      queries = fs.readFileSync(sqlPath, encoding: 'utf-8')
-    if view
-      queries = Mustache.render queries, view
-    queries = queries
-      .split ';'
-      .map (s) -> s.trim()
-      .filter (s) -> s
+      console.log ">>".blue.bold, "#{sqlPath}".blue.bold if queries.file
+      rawQueries = queries.text or fs.readFileSync(sqlPath, encoding: 'utf-8')
+      queries = render rawQueries, view
+    if split
+      queries = new Splitter().split queries
     result = null
     for i, query of queries
-      console.log "#{query};".green
+      console.log query.green
       if cb?
         @client.query(query, cb)
       else
