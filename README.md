@@ -235,7 +235,7 @@ containing a string of sql. It should return, in json:
 }
 ```
 
-## Turning It Off
+### Turning It Off
 
 You can make `@sql` not split by using the first-arg-is-options format and
 passing `split: false`:
