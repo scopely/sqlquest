@@ -231,8 +231,9 @@ project depend on Python directly, so this seemed like a nice compromise.
 
 The service used by default is [sqlformat.org](http://sqlformat.org), but this
 is entirely configurable. sqlformat has an IP-based API limit of 500 requests
-per hour. I cannot vouch for the security of this API. I plan to implement an
-open source server based on the underlying Python library soon.
+per hour. I cannot vouch for the security of this API. I encourage you to
+deploy our [open source flask server](https://github.com/scopely/sqlsplit) that
+does the same thing!
 
 ### Server Spec
 
