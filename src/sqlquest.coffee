@@ -53,8 +53,7 @@ opts = nomnom()
   .option 'quests', abbr: 'q', help: 'Where to find quests'
   .option('splitter',
     abbr: 's',
-    default: 'http://sqlformat.org/api/v1/split',
-    help: 'Splitter API URL to use')
+    help: 'Splitter API URL to use [http://sqlformat.org/api/v1/split]')
   .option('config',
     abbr: 'c',
     default: 'config.toml',
