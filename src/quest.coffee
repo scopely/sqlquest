@@ -246,9 +246,8 @@ class Quest
       view = null
     if typeof(queries) != 'string'
       split = queries.split if queries.split?
-      if queries.text
-        params = queries.params
-      else
+      params = queries.params
+      if queries.file
         sqlPath = path.join @sqlPath, queries.file
         console.log ">>".blue.bold, "#{sqlPath}".blue.bold if queries.file
       rawQueries = queries.text or fs.readFileSync(sqlPath, encoding: 'utf-8')
