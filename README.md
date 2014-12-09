@@ -214,6 +214,23 @@ and it'll execute the sql file rendering embedded mustaches with the options you
 pass after `--`. The results of the last query, if there are any, will be
 outputted as a table.
 
+## Safe Parameterized Queries
+
+If for some reason mustache isn't working out for you and you want to use
+node-postgres's safe parameterized queries (which protect against sql injection
+attacks), you can use those too. Just use the object-as-first-arg form of `@sql`
+and pass it a `params` property:
+
+```coffee
+@sql text: "INSERT INTO foo VALUES ($1);", params: [1]
+```
+
+The above will replace $1 with the number 1.
+
+*Note that unlike with mustache replacements, the outputted query will be not
+have its variables filled in. I've yet to find a way to get the substituted
+final query out of node-postgres.*
+
 ## Example Output
 
 ![example picture thing](https://dl.dropboxusercontent.com/s/tldoycyvpai33c1/2014-12-05%20at%2012.04%20AM%202x.png?dl=0)

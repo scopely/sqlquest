@@ -232,6 +232,7 @@ class Quest
   #     * `split`: {Boolean} split the sql queries into chunks using an API.
   #       This allows timing of individual queries, as well as more granular
   #       error handling. `true` by default.
+  #     * `params`: {Array} of parameters to fill in node-postgres query params.
   # * `view`: (optional) {Object} to fill in a mustache template with.
   # * `cb`: (optional) Use a callback rather than be synchronous. NOT
   #   RECOMMENDED UNLESS YOU KNOW PRECISELY WHAT YOU'RE DOING.
@@ -245,9 +246,12 @@ class Quest
       view = null
     if typeof(queries) != 'string'
       split = queries.split if queries.split?
-      sqlPath = path.join @sqlPath, queries.file
-      console.log ">>".blue.bold, "#{sqlPath}".blue.bold if queries.file
+      params = queries.params
+      if queries.file
+        sqlPath = path.join @sqlPath, queries.file
+        console.log ">>".blue.bold, "#{sqlPath}".blue.bold if queries.file
       rawQueries = queries.text or fs.readFileSync(sqlPath, encoding: 'utf-8')
+    params ?= []
     queries = render rawQueries ? queries, view
     if split
       queries = new Splitter(@splitter).split queries
@@ -255,10 +259,10 @@ class Quest
     for i, query of queries
       console.log "\n#{query}\n".green
       if cb?
-        @client.query(query, cb)
+        @client.query(query, params, cb)
       else
         console.time('Execution time') if @time
-        result = @client.query.sync(@client, query)
+        result = @client.query.sync(@client, query, params)
         if @time
           console.timeEnd('Execution time')
       console.log()
