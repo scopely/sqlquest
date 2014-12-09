@@ -288,3 +288,9 @@ host = "foo.db.com"
 user = "me"
 ...
 ```
+
+## Organizing Your Quests
+
+The trick here is mostly to remember that you don't need to just have one single
+`quests` directory. You can specify the quests direction via the `-q` option.
+You can organize your quests pretty much however you see fit!
