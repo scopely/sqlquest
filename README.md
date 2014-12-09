@@ -229,7 +229,7 @@ The above will replace $1 with the number 1.
 
 *Note that unlike with mustache replacements, the outputted query will be not
 have its variables filled in. I've yet to find a way to get the substituted
-final query out of node-postgres*
+final query out of node-postgres.*
 
 ## Example Output
 
