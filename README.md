@@ -208,11 +208,11 @@ module.exports =
 ## Simple Parameterized SQL
 
 Don't need an adventure? Well, use a cheat code. If your quest does not have a
-`<quest>.{coffee,js}` file, then no biggie, just drop a sql file into your
-quest's `sql/` directory called `<questname>.sql`. You can now run this quest
-and it'll execute the sql file rendering embedded mustaches with the options you
-pass after `--`. The results of the last query, if there are any, will be
-outputted as a table.
+`<quest>.{coffee,js}` file, then no biggie, just drop a sql file in your quest
+directory. As long as it's the only file in there (directories count), you can
+run this quest and it'll execute the sql file rendering embedded mustaches with
+the options you pass after `--`. The results of the last query, if there are
+any, will be outputted as a table.
 
 ## Safe Parameterized Queries
 
