@@ -92,10 +92,10 @@ class Quest
 
   # Private: Setup the {Quest::adventure} function.
   #
-  # Does nothing if {Quest::adventure} is implemented, otherwise checks to see
-  # if there is a `<quest>/sql/<quest>.sql` file and if so, sets a default
-  # method to run it with passed options and render the results as a table.
-  # If neither of those things are true, throw an error.
+  # Does nothing if {Quest::adventure} is implemented. Otherwise, sets
+  # {Quest::adventure} to a stub function that just hunts down a sql file and
+  # executes it if present, outputting any rows as a table. This covers most
+  # use cases.
   setAdventure: ->
     @adventure ?= =>
       console.log "No quest module found. Just running SQL.".bold
