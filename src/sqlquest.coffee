@@ -4,8 +4,9 @@ fs = require 'fs'
 colors = require 'colors'
 read = require 'read'
 nomnom = require 'nomnom'
-toml = require 'toml'
-_ = require 'underscore'
+
+{findSql, findQuest} = require './hunter'
+{mergeConfig} = require './config'
 
 # Private: Split a list the first instance of an element
 #
@@ -23,20 +24,6 @@ splitAt = (target, items) ->
     [beginning, end]
   else
     [items, []]
-
-# Private: Merge toml config at a path with some opts.
-#
-# If `tomlPath` exists, read it and merge the resulting object with opts.
-#
-# * `tomlPath`: {String} to a possible toml config file.
-# * `opts`: {Object} of parsed command line options.
-#
-# Returns an {Object} of the merged config.
-mergeConfig = (tomlPath, opts) ->
-  if tomlPath and fs.existsSync tomlPath
-    _.extend toml.parse(fs.readFileSync(tomlPath)), opts
-  else
-    opts
 
 # Separate all args after `--` so we can pass those on to the quest.
 [args, questOpts] = splitAt '--', process.argv.slice(2)
@@ -74,32 +61,6 @@ opts = mergeConfig(opts.config, opts)
 # Just throw it at the wall. Should probably let quests override how they handle
 # their command line args.
 questOpts = nomnom().parse(questOpts)
-
-# Private: Find a quest board somewhere on Pandora.
-#
-# Looks up a {Quest} in the `quests` directory. If it isn't found, but the
-# directory exists with a `sql/` subfolder containing a sql file of the same
-# name, instantiate the default Quest class.
-#
-# * `quests`: {String} path to the directory containing quests. If `null`,
-#             makes a relatively reasonable guess that it is 'quests'
-# * `quest`: {String} quest to look for.
-#
-# Returns a {Quest} or throws an {Error}.
-findQuest = (quests, quest) ->
-  quests = path.resolve (quests or 'quests')
-  questPath = "#{quests}/#{quest}/#{quest}"
-  try
-    [questPath, require questPath]
-  catch e
-    if e.message.indexOf("Cannot find module") > -1
-      sqlPath = path.join path.dirname(questPath), 'sql', "#{quest}.sql"
-      if fs.existsSync(sqlPath)
-        [questPath, require './quest']
-      else
-        throw e
-    else
-      throw e
 
 # Private: Entry point function.
 #

@@ -7,6 +7,8 @@ pg = require('pg').native
 colors = require 'colors'
 Mustache = require 'mustache'
 Table = require 'cli-table'
+
+{findSql} = require './hunter'
 Splitter = require './split'
 
 # Private: Render text with a view, or return text if view isn't a thing.
@@ -35,17 +37,13 @@ module.exports =
 #
 # ## Examples
 #
-# The simplest example is a completely blank implementation
-#
-# ```coffee
-# class AwesomeQuest extends Quest
-# ```
-#
-# This will cause sqlquest to simply look for a `quests/awesome/sql/awesome.sql`
-# file and run it with {{Quest::sql}}. This covers the most trivial usecases.
-# For more advanced usage where you want to embed sql, deal with results of
-# queries, run multiple files, do retries, etc, you'll want to implement
-# {{Quest::adventure}}.
+# The simplest example is a completely blank implementation. Just don't have an
+# implementation at all. No coffee! This will cause sqlquest to simply look for
+# any given `.sql` file in the quest directory if and only if it is the only
+# file in the directory. file and run it with {{Quest::sql}}. This covers the
+# most trivial usecases. For more advanced usage where you want to embed sql,
+# deal with results of queries, run multiple files, do retries, etc, you'll want
+# to implement {{Quest::adventure}}.
 #
 # ```coffee
 # class AwesomeQuest extends Quest
@@ -94,14 +92,14 @@ class Quest
 
   # Private: Setup the {Quest::adventure} function.
   #
-  # Does nothing if {Quest::adventure} is implemented, otherwise checks to see
-  # if there is a `<quest>/sql/<quest>.sql` file and if so, sets a default
-  # method to run it with passed options and render the results as a table.
-  # If neither of those things are true, throw an error.
+  # Does nothing if {Quest::adventure} is implemented. Otherwise, sets
+  # {Quest::adventure} to a stub function that just hunts down a sql file and
+  # executes it if present, outputting any rows as a table. This covers most
+  # use cases.
   setAdventure: ->
     @adventure ?= =>
-      console.log "No quest module. Defaulting to running #{@name}.sql.".bold
-      @table @sql(file: "#{@name}.sql", @opts)
+      console.log "No quest module found. Just running SQL.".bold
+      @table @sql(file: findSql(@questPath), @opts)
 
   # Public: Run a function inside of a db transaction
   #
@@ -229,6 +227,7 @@ class Quest
   #   can have the following properties:
   #     * `text`: {String} of sql to execute.
   #     * `file`: {String} filename of a file in the quest's `sql` directory.
+  #               If the path is absolute, will just execute it wherever it is.
   #     * `split`: {Boolean} split the sql queries into chunks using an API.
   #       This allows timing of individual queries, as well as more granular
   #       error handling. `true` by default.
@@ -248,7 +247,10 @@ class Quest
       split = queries.split if queries.split?
       params = queries.params
       if queries.file
-        sqlPath = path.join @sqlPath, queries.file
+        if queries.file == path.resolve(queries.file)
+          sqlPath = queries.file
+        else
+          sqlPath = path.join @sqlPath, queries.file
         console.log ">>".blue.bold, "#{sqlPath}".blue.bold if queries.file
       rawQueries = queries.text or fs.readFileSync(sqlPath, encoding: 'utf-8')
     params ?= []

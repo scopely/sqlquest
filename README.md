@@ -28,7 +28,7 @@ With this symlink, you can run sqlquest from the top level of your project.
 
 Create a directory called `quests/`. This is where you'll put all your quests.
 Each quest is a directory (the name of the quest) with at a minimum either a
-`.{coffee,js}` file or a `sql/<questname>.sql` file.
+`.{coffee,js}` file or a `.sql` file at the top level.
 
 You can run quests like so:
 
@@ -208,11 +208,9 @@ module.exports =
 ## Simple Parameterized SQL
 
 Don't need an adventure? Well, use a cheat code. If your quest does not have a
-`<quest>.{coffee,js}` file, then no biggie, just drop a sql file into your
-quest's `sql/` directory called `<questname>.sql`. You can now run this quest
-and it'll execute the sql file rendering embedded mustaches with the options you
-pass after `--`. The results of the last query, if there are any, will be
-outputted as a table.
+`<quest>.{coffee,js}` file, then no biggie, just drop a sql file in your quest
+directory. It'll find the first sql file and it'll just run it. If the file has
+mustaches it'll fill 'em in with options passed after `--`.
 
 ## Safe Parameterized Queries
 
