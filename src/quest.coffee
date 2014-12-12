@@ -67,7 +67,7 @@ class Quest
   #   * `time`: {Boolean} Set to false to not print execution time of queries.
   #   * `splitter`: {String} URL to hit to split sql.
   # * `questPath`: {String} path to this quest.
-  # * `questOpts`: {Object} Parsed command line args for the quest.
+  # * `questOpts`: {Object} Command line options for the quest.
   constructor: ({host, port, db, user, pass, url, time, splitter},
                 @questPath, @opts) ->
     connString = url ? "postgres://#{user}:#{pass}@#{host}:#{port}/#{db}"
@@ -77,6 +77,11 @@ class Quest
     @sqlPath = path.join @questPath, 'sql'
     @client = new pg.Client(connString)
     @setAdventure()
+    @options ?= {}
+    @opts = require('nomnom')
+      .options @options
+      .usage "sqlquest #{@name} [OPTIONS]"
+      .parse @opts
     @client.connect (err) =>
       if err
         console.error "Couldn't connect!".red.bold
