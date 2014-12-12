@@ -24,11 +24,11 @@ module.exports =
 #
 # {Quest} is the important part of the equation. Its methods make up the DSL
 # that makes sqlquest special and powerful. Extend this class and implement the
-# {{Quest::adventure}} method to create a quest. When a subclass of {Quest} is
-# instantiated, it runs its {{Quest::adventure}} method inside of a fiber with
+# {Quest::adventure} method to create a quest. When a subclass of {Quest} is
+# instantiated, it runs its {Quest::adventure} method inside of a fiber with
 # [node-sync](https://github.com/ybogdanov/node-sync). The provided methods are
 # synchronous by default, and this is a core part of what makes the {Quest} DSL
-# powerful. {{Quest::sql}} can take a callback, but by default it executes
+# powerful. {Quest::sql} can take a callback, but by default it executes
 # queries synchronous so that you can author your SQL quests (jobs) in a clean,
 # easy, readable way.
 #
@@ -40,10 +40,10 @@ module.exports =
 # The simplest example is a completely blank implementation. Just don't have an
 # implementation at all. No coffee! This will cause sqlquest to simply look for
 # any given `.sql` file in the quest directory if and only if it is the only
-# file in the directory. file and run it with {{Quest::sql}}. This covers the
-# most trivial usecases. For more advanced usage where you want to embed sql,
-# deal with results of queries, run multiple files, do retries, etc, you'll want
-# to implement {{Quest::adventure}}.
+# file in the directory. This covers the most trivial usecases. For more
+# advanced usage where you want to embed sql, deal with results of queries, run
+# multiple files, do retries, etc, you'll want to implement
+# {Quest::adventure}.
 #
 # ```coffee
 # class AwesomeQuest extends Quest
@@ -67,7 +67,7 @@ class Quest
   #   * `time`: {Boolean} Set to false to not print execution time of queries.
   #   * `splitter`: {String} URL to hit to split sql.
   # * `questPath`: {String} path to this quest.
-  # * `questOpts`: {Object} Parsed command line args for the quest.
+  # * `questOpts`: {Object} Command line options for the quest.
   constructor: ({host, port, db, user, pass, url, time, splitter},
                 @questPath, @opts) ->
     connString = url ? "postgres://#{user}:#{pass}@#{host}:#{port}/#{db}"
@@ -77,6 +77,11 @@ class Quest
     @sqlPath = path.join @questPath, 'sql'
     @client = new pg.Client(connString)
     @setAdventure()
+    @options ?= {}
+    @opts = require('nomnom')
+      .options @options
+      .usage "sqlquest #{@name} [OPTIONS]"
+      .parse @opts
     @client.connect (err) =>
       if err
         console.error "Couldn't connect!".red.bold

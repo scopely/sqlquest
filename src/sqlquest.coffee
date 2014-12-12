@@ -58,10 +58,6 @@ opts = nomnom()
 
 opts = mergeConfig(opts.config, opts)
 
-# Just throw it at the wall. Should probably let quests override how they handle
-# their command line args.
-questOpts = nomnom().parse(questOpts)
-
 # Private: Entry point function.
 #
 # Tries to find and run the specified quest. Handle errors if
