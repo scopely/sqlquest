@@ -207,7 +207,7 @@ module.exports =
 
 ## Options
 
-You have access to options passed to sqlquest after `--`. This is your quest
+You have access to options passed to sqlquest after `--`. These are your quest
 options. The options will be parsed as best as possible automatically, but you
 can also specify your option spec to be given to [nomnom](https://github.com/harthur/nomnom)
 before parsing:
