@@ -205,6 +205,24 @@ module.exports =
           @table @sql(file: 'bar.sql')
 ```
 
+## Options
+
+You have access to options passed to sqlquest after `--`. This is your quest
+options. The options will be parsed as best as possible automatically, but you
+can also specify your option spec to be given to [nomnom](https://github.com/harthur/nomnom)
+before parsing:
+
+```coffee
+class MyQuest extends Quest
+  options:
+    name:
+      abbr: 'n'
+      required: true
+...
+```
+
+In any case, parsed options can be found in `@opts`.
+
 ## Simple Parameterized SQL
 
 Don't need an adventure? Well, use a cheat code. If your quest does not have a
