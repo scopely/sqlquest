@@ -116,8 +116,8 @@ There are other helpers to make your adventure easier.
 
 ## Inventory
 
-sqlquest has a number baked in potions to keep you healthy. Take a gander. To
-dig a bit deeper, sift through the code. Bit of prose in there.
+sqlquest has a number of baked in potions to keep you healthy. Take a gander.
+To dig a bit deeper, sift through the code. Bit of prose in there.
 
 ### transactions
 
