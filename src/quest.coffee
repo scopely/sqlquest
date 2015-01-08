@@ -263,7 +263,10 @@ class Quest
     if split
       queries = new Splitter(@splitter).split queries
     result = null
+    count = queries.length
     for i, query of queries
+      counter = parseInt(i)
+      console.log "\nNow executing #{counter+1} of #{count}\n"
       console.log "\n#{query}\n".green
       if cb?
         @client.query(query, params, cb)
