@@ -227,10 +227,10 @@ class Quest
     else
       console.log "Nothing to output.".gray
 
-  jsonify: (sqlResult, options) ->
-    console.log JSON.stringify row, 4 for row in sqlResult.rows
+  jsonify: (sqlResult) ->
+    console.log JSON.stringify sqlResult.rows
 
-  outputType: (sqlResult, options) ->
+  outputRows: (sqlResult) ->
     switch @output
       when 'table' then @table sqlResult
       when 'json' then @jsonify sqlResult
