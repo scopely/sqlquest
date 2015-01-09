@@ -53,6 +53,7 @@ opts = nomnom()
     help: 'Print the runtime of each query'
   )
   .option 'quest', position: 0, help: 'Which quest to embark on!'
+  .option 'output', abbr: 'o', help: 'Which output format.'
   .option '', help: "Everything after this is passed to the quest."
   .parse(args)
 

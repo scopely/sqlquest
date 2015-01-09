@@ -68,10 +68,11 @@ class Quest
   #   * `splitter`: {String} URL to hit to split sql.
   # * `questPath`: {String} path to this quest.
   # * `questOpts`: {Object} Command line options for the quest.
-  constructor: ({host, port, db, user, pass, url, time, splitter},
+  constructor: ({host, port, db, user, pass, url, time, splitter, output},
                 @questPath, @opts) ->
     connString = url ? "postgres://#{user}:#{pass}@#{host}:#{port}/#{db}"
     @splitter = splitter
+    @output = output
     @time = time
     @name = path.basename(@questPath)
     @sqlPath = path.join @questPath, 'sql'
@@ -225,6 +226,15 @@ class Quest
       console.log table.toString()
     else
       console.log "Nothing to output.".gray
+
+  jsonify: (sqlResult, options) ->
+    console.log JSON.stringify row, 4 for row in sqlResult.rows
+
+  outputType: (sqlResult, options) ->
+    switch @output
+      when 'table' then @table sqlResult
+      when 'json' then @jsonify sqlResult
+      else console.log "output of file type #{@output} not supported"
 
   # Public: Run sql code in a string or file, fulfilling mustache templates.
   #
