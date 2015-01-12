@@ -26,4 +26,4 @@ class OutputExampleQuest extends Quest
 
     console.log "They're us. They're all of us.".italic.gray
 
-    @table @sql "SELECT * from people;"
+    @outputRows @sql "SELECT * from people;"
