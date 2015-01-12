@@ -228,7 +228,7 @@ class Quest
       console.log "Nothing to output.".gray
 
   jsonify: (sqlResult) ->
-    console.log JSON.stringify sqlResult.rows
+    console.log JSON.stringify(sqlResult.rows, undefined, 2)
 
   outputRows: (sqlResult) ->
     switch @output
