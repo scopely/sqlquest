@@ -276,7 +276,7 @@ class Quest
     count = queries.length
     for i, query of queries
       counter = parseInt(i)
-      console.log "\nNow executing #{counter+1} of #{count}\n"
+      console.log "\nNow executing #{counter+1} of #{count}"
       console.log "\n#{query}\n".green
       if cb?
         @client.query(query, params, cb)
