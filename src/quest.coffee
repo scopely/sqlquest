@@ -7,6 +7,7 @@ pg = require('pg').native
 colors = require 'colors'
 Mustache = require 'mustache'
 Table = require 'cli-table'
+_ = require 'underscore'
 
 {findSql} = require './hunter'
 Splitter = require './split'
@@ -71,6 +72,7 @@ class Quest
   constructor: ({host, port, db, user, pass, url, time, splitter, output},
                 @questPath, @opts) ->
     connString = url ? "postgres://#{user}:#{pass}@#{host}:#{port}/#{db}"
+    @silentErrors = false
     @splitter = splitter
     @output = output
     @time = time
@@ -90,11 +92,11 @@ class Quest
       else
         Sync (=> @adventure()), (err, result) =>
           @client.end()
-          if err
-            console.error "An error occurred!".red.bold
-            console.error err.message.red.underline
+          if err or @silentErrors
+            console.error "Errors occurred!".red.bold
+            console.error err.message.red.underline if err
             console.error()
-            throw err
+            process.exit 1
 
   # Private: Setup the {Quest::adventure} function.
   #
@@ -137,7 +139,7 @@ class Quest
 
   # Public: Run a function in a retry loop.
   #
-  # Run a function over and over again until it doesn't throw an error or run
+  # Run a function over and over again until it doesn't throw an error or runs
   # out of allotted 'lives' (tries).
   #
   # * `opts`: Options {Object}.
@@ -146,6 +148,11 @@ class Quest
   #   * `times`: {Number} of times we try before we give up. Default is 10.
   #   * `wait`: {Number} of milliseconds to wait before each retry. Default is
   #     5000
+  #   * `silent`: {Boolean} indicating whether or not we should throw an error
+  #     if we run out of lives and fail. `false` by default, meaning an error
+  #     will be thrown if we run out of tries. Set this to true to silently
+  #     skip over the failure and simply track the error and report failure at
+  #     the end of the job.
   #
   # ## Examples
   #
@@ -172,6 +179,7 @@ class Quest
       opts = {}
     wait ?= 5000
     times ?= 10
+    opts.silent ?= false
     while true
       try
         return cb()
@@ -184,7 +192,12 @@ class Quest
             times -= 1
           else
             console.error "Out of lives... I give up.".red.underline
-            throw e
+            if opts.silent
+              @silentErrors = true
+              console.error e.message.red.underline
+              return
+            else
+              throw e
 
   # Public: Print out rows as a table.
   #
