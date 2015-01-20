@@ -174,6 +174,11 @@ certain matching error messages.
   ...
 ```
 
+If you'd like to continue execution of your quest in the event of a failure to
+retry after exhausting tries, pass `silent: true`. This will cause no error
+to be thrown regardless of what happens in the retry loop, but will make sure
+the exit code is set to 1 when the quest exits to report failure.
+
 ### little bobby tables
 
 You probably want to see the results of queries sometimes. It's not trivial to

@@ -37,7 +37,14 @@ class ExampleQuest extends Quest
       console.log "* #{person}".underline
     console.log()
 
-    # Retry a transaction until it succeeds or fails 3 times.
+    # Retry with silent failure. Prints error and returns non-zero exit code
+    # at the end of the quest.
+    @retry times: 2, wait: 0, silent: true, =>
+      @sql "nope;"
+
+    # Retry a transaction until it succeeds or fails 3 times. Anything after
+    # this will not execute because this error will stop things (because
+    # the silent option isn't being used).
     @retry times: 3, wait: 5000, =>
       @transaction =>
         @sql "create temp table foo (x int);"
@@ -45,3 +52,5 @@ class ExampleQuest extends Quest
 
         # this will never happen
         @sql "create temp table bar as (select * from foo)"
+
+    @sql "never happens;"
