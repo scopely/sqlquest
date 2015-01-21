@@ -11,6 +11,7 @@ _ = require 'underscore'
 
 {findSql} = require './hunter'
 Splitter = require './split'
+{time} = require './timing'
 
 # Private: Render text with a view, or return text if view isn't a thing.
 render = (text, view) ->
@@ -287,16 +288,17 @@ class Quest
       queries = new Splitter(@splitter).split queries
     result = null
     count = queries.length
-    for i, query of queries
-      counter = parseInt(i)
-      console.log "\nNow executing #{counter+1} of #{count}"
-      console.log "\n#{query}\n".green
-      if cb?
-        @client.query(query, params, cb)
-      else
-        console.time('Execution time') if @time
-        result = @client.query.sync(@client, query, params)
-        if @time
-          console.timeEnd('Execution time')
+    time 'Total Execution Time', =>
+      for i, query of queries
+        counter = parseInt(i)
+        console.log "\nNow executing #{counter+1} of #{count}"
+        console.log "\n#{query}\n".green
+        if cb?
+          @client.query(query, params, cb)
+        else
+          if @time
+            result = time 'Execution Time', =>
+              @client.query.sync(@client, query, params)
+        console.log()
       console.log()
     result
