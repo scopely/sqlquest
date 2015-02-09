@@ -1,6 +1,6 @@
 {
   "name": "sqlquest",
-  "version": "0.3.0",
+  "version": "0.3.1",
   "description": "A sql job runner/DSL",
   "main": "./src/quest.coffee",
   "bin": "./bin/sqlquest",
@@ -17,7 +17,7 @@
     "pg-native": "^1.7.1",
     "read": "^1.0.5",
     "request": "^2.49.0",
-    "sync": "^0.2.3",
+    "sync": "0.2.3",
     "toml": "^2.0.6",
     "underscore": "^1.7.0"
   }
