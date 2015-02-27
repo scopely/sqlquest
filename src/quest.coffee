@@ -185,6 +185,7 @@ class Quest
       try
         return cb()
       catch e
+        console.trace e
         if not okErrors or okErrors.some((regex) -> e.message.match regex)
           if times == 'forever' or times > 0
             console.error "Error occurred: #{e.message}".red.underline
@@ -217,7 +218,8 @@ class Quest
   # ```coffee
   # @table @sql(file: 'foo.sql')
   # ```
-  table: (sqlResult, {trimWhitespace}={}) ->
+  table: (sqlResult, {trimWhitespace, print}={}) ->
+    print ?= true
     trimWhitespace ?= true
     if sqlResult.rows.length > 0
       columns = (field.name for field in sqlResult.fields)
@@ -239,7 +241,10 @@ class Quest
               value ? ''
 
       table.push.apply table, values
-      console.log table.toString()
+      if print
+        console.log table.toString()
+      else
+        table
     else
       console.log "Nothing to output.".gray
 
