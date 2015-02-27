@@ -181,11 +181,11 @@ class Quest
     wait ?= 5000
     times ?= 10
     opts.silent ?= false
-    while true
+    while times > 0
       try
         return cb()
       catch e
-        if not okErrors? or okErrors.some((regex) -> e.message.match regex)
+        if not okErrors or okErrors.some((regex) -> e.message.match regex)
           if times == 'forever' or times > 0
             console.error "Error occurred: #{e.message}".red.underline
             console.log "Retrying in #{wait}ms. Retries left: #{times}".red.bold
@@ -199,6 +199,8 @@ class Quest
               return
             else
               throw e
+        else
+          throw e
 
   # Public: Print out rows as a table.
   #
