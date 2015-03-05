@@ -7,7 +7,8 @@ pg = require('pg').native
 colors = require 'colors'
 Mustache = require 'mustache'
 Table = require 'cli-table'
-_ = require 'underscore'
+_ = require 'lodash'
+EventEmitter = require('events').EventEmitter
 
 {findSql} = require './hunter'
 Splitter = require './split'
@@ -57,7 +58,7 @@ module.exports =
 # ```
 #
 # See {{Quest::sql}} for a detailed description of what is possible.
-class Quest
+class Quest extends EventEmitter
 
   # Private: Construct a quest instance.
   #
@@ -82,22 +83,47 @@ class Quest
     @client = new pg.Client(connString)
     @setAdventure()
     @options ?= {}
+    @plugins ?= []
+
     @opts = require('nomnom')
       .options @options
       .usage "sqlquest #{@name} [OPTIONS]"
       .parse @opts
+
+    @registerPlugins()
+
+    @emit "connecting", @client
     @client.connect (err) =>
       if err
+        @emit 'connection-error', err
         console.error "Couldn't connect!".red.bold
         console.error err.message.red
       else
+        @emit "adventuring"
         Sync (=> @adventure()), (err, result) =>
           @client.end()
+          @emit 'adventure-finished', result
           if err or @silentErrors
+            @emit 'adventure-error', err
             console.error "Errors occurred!".red.bold
             console.error err.message.red.underline if err
             console.error()
             process.exit 1
+
+  # Private: Register plugins specified in @plugins.
+  #
+  # If the plugin path is absolute or isn't relative to `_dirname` then
+  # just require it, otherwise make the path absolute by adding @questPath to
+  # it.
+  registerPlugins: ->
+    defaultPlugins = [
+      './plugins/helpers'
+    ]
+    for plugin in @plugins
+      console.log path
+      unless _.startsWith(plugin, '/') or not _.startsWith(plugin, '.')
+        plugin = path.join(@questPath, plugin)
+      require(plugin)(@)
 
   # Private: Setup the {Quest::adventure} function.
   #
@@ -110,33 +136,12 @@ class Quest
       console.log "No quest module found. Just running SQL.".bold
       @table @sql(file: findSql(@questPath), @opts)
 
-  # Public: Run a function inside of a db transaction
+  # Public: Add a helper to the class prototype.
   #
-  # Does what it says on the tin. Just runs `BEGIN`, executes your code (which
-  # presumably executes some sql and stuff), then runs `COMMIT` unless an
-  # uncaught exception occurs.
-  #
-  # * `cb`: {Function} Function to execute.
-  #
-  # ## Examples
-  #
-  # ```coffee
-  # @transaction =>
-  #   @sql file: 'intransaction.sql'
-  # ```
-  #
-  # Returns the result of calling `cb`.
-  transaction: (cb) ->
-    console.log "Beginning transaction".blue.underline
-    @sql "BEGIN;"
-    try
-      cb()
-    catch e
-      console.error "An error occurred, rolling back".red.underline
-      @sql "ROLLBACK;"
-      throw e
-    @sql """-- Ending transaction!
-            COMMIT;"""
+  # * `name`: {String} name of the helper.
+  # * `f`: {Function} function to associate the helper with.
+  addHelper: (name, f) ->
+    this.__proto__[name] = f
 
   # Public: Run a function in a retry loop.
   #
@@ -173,25 +178,30 @@ class Quest
   #
   # Returns the result of calling `cb`.
   retry: (opts, cb) ->
-    if typeof(opts) != 'function'
-      {times, wait, okErrors} = opts
-    else
+
+    # Arg shuffling
+    if typeof(opts) == 'function'
       cb = opts
       opts = {}
-    wait ?= 5000
-    times ?= 10
+
+    opts.wait ?= 5000
+    opts.times ?= 10
     opts.silent ?= false
+    @emit 'retry-loop', opts
     while times > 0
       try
         return cb()
       catch e
         console.trace e
-        if not okErrors or okErrors.some((regex) -> e.message.match regex)
-          if times == 'forever' or times > 0
+        match = (regex) -> e.message.match regex
+        if not opts.okErrors or opts.okErrors.some(match)
+          if opts.times == 'forever' or opts.times > 0
             console.error "Error occurred: #{e.message}".red.underline
-            console.log "Retrying in #{wait}ms. Retries left: #{times}".red.bold
-            Sync.sleep(wait)
-            times -= 1
+            console.log "Retrying in #{opts.wait}ms.".red.bold
+            console.log "Retries remaining: #{opts.times}".red.bold
+            Sync.sleep(opts.wait)
+            opts.times -= 1
+            @emit 'retrying', opts
           else
             console.error "Out of lives... I give up.".red.underline
             if opts.silent
@@ -202,6 +212,34 @@ class Quest
               throw e
         else
           throw e
+
+  # Public: Run a function inside of a db transaction
+  #
+  # Does what it says on the tin. Just runs `BEGIN`, executes your code (which
+  # presumably executes some sql and stuff), then runs `COMMIT` unless an
+  # uncaught exception occurs.
+  #
+  # * `cb`: {Function} Function to execute.
+  #
+  # ## Examples
+  #
+  # ```coffee
+  # @transaction =>
+  #   @sql file: 'intransaction.sql'
+  # ```
+  #
+  # Returns the result of calling `cb`.
+  transaction = (cb) ->
+    console.log "Beginning transaction".blue.underline
+    @sql "BEGIN;"
+    try
+      cb()
+    catch e
+      console.error "An error occurred, rolling back".red.underline
+      @sql "ROLLBACK;"
+      throw e
+    @sql """-- Ending transaction!
+            COMMIT;"""
 
   # Public: Print out rows as a table.
   #
@@ -292,20 +330,27 @@ class Quest
     params ?= []
     queries = render rawQueries ? queries, view
     if split
+      @emit 'splitting', queries, view
       queries = new Splitter(@splitter).split queries
+      @emit 'split-complete', queries, view
     result = null
     count = queries.length
     time 'Total Execution Time', =>
+      @emit 'executing-queries', queries, view
       for i, query of queries
-        counter = parseInt(i)
+        i = parseInt(i)
+        counter = i
         console.log "\nNow executing #{counter+1} of #{count}"
         console.log "\n#{query}\n".green
+        @emit 'executing-query', i, query
         if cb?
           @client.query(query, params, cb)
         else
           if @time
             result = time 'Execution Time', =>
               @client.query.sync(@client, query, params)
+        @emit 'executed-query', i, query
         console.log()
+      @emit 'executed-queries', queries, view
       console.log()
     result
