@@ -11,6 +11,7 @@
     "coffee-script": "~1.8.0",
     "colors": "^1.0.3",
     "fibers": "1.0.2",
+    "lodash": "^3.3.1",
     "mustache": "^0.8.2",
     "nomnom": "~1.8.1",
     "pg": "~4.0.0",
