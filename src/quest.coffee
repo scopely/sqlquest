@@ -116,9 +116,6 @@ class Quest extends EventEmitter
   # just require it, otherwise make the path absolute by adding @questPath to
   # it.
   registerPlugins: ->
-    defaultPlugins = [
-      './plugins/helpers'
-    ]
     for plugin in @plugins
       console.log path
       unless _.startsWith(plugin, '/') or not _.startsWith(plugin, '.')
