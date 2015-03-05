@@ -117,7 +117,6 @@ class Quest extends EventEmitter
   # it.
   registerPlugins: ->
     for plugin in @plugins
-      console.log path
       unless _.startsWith(plugin, '/') or not _.startsWith(plugin, '.')
         plugin = path.join(@questPath, plugin)
       require(plugin)(@)
