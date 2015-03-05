@@ -310,6 +310,37 @@ user = "me"
 ...
 ```
 
+## Plugins
+
+SQLQuest has a simple built in plugin system that can be used to add
+fucntionality. First of all, here's how you use a plugin:
+
+```coffee
+module.exports =
+class MyQuest extends Quest
+  plugins: [
+    'sqlquest-reporting'
+  ]
+  ...
+```
+
+That's it. The string `'sqlquest-reporting'` is the same thing you'd pass to
+`require` to require the plugin module and it is, in fact, what happens under
+the hood.
+
+So how does that work? Well, take a look at
+[sqlquest-reporting](https://github.com/scopely/sqlquest-reporting). A plugin
+is a module that exports one single function that takes the current `Quest`
+object and... does stuff with it.
+
+`Quest` has a built in `addHelper` method that plugins can call on the quest
+to add their own helper functions. For example, the reporting plugin adds
+`@report`!
+
+Finally, `Quest` is an `EventEmitter`. As such, you can capture `Quest`'s
+internal events and also add your own in your plugins. Poke around the `Quest`
+class to see which events you can track!
+
 ## Organizing Your Quests
 
 The trick here is mostly to remember that you don't need to just have one single
