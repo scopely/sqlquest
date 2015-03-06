@@ -184,7 +184,7 @@ class Quest extends EventEmitter
     opts.times ?= 10
     opts.silent ?= false
     @emit 'retry-loop', opts
-    while times > 0
+    while opts.times > 0
       try
         return cb()
       catch e
