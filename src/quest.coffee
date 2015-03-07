@@ -183,31 +183,33 @@ class Quest extends EventEmitter
     opts.wait ?= 5000
     opts.times ?= 10
     opts.silent ?= false
+    error = null
     @emit 'retry-loop', opts
     while opts.times > 0
       try
         return cb()
       catch e
+        error = e
         console.trace e
         match = (regex) -> e.message.match regex
         if not opts.okErrors or opts.okErrors.some(match)
-          if opts.times == 'forever' or opts.times > 0
-            console.error "Error occurred: #{e.message}".red.underline
-            console.log "Retrying in #{opts.wait}ms.".red.bold
-            console.log "Retries remaining: #{opts.times}".red.bold
-            Sync.sleep(opts.wait)
-            opts.times -= 1
-            @emit 'retrying', opts
-          else
-            console.error "Out of lives... I give up.".red.underline
-            if opts.silent
-              @silentErrors = true
-              console.error e.message.red.underline
-              return
-            else
-              throw e
+          console.error "Error occurred: #{e.message}".red.underline
+          console.log "Retrying in #{opts.wait}ms.".red.bold
+          console.log "Retries remaining: #{opts.times}".red.bold
+          Sync.sleep(opts.wait)
+          opts.times -= 1
+          @emit 'retrying', opts
         else
           throw e
+
+    # Out of lives, time to give up...
+    console.error "Out of lives... I give up.".red.underline
+    if opts.silent
+      @silentErrors = true
+      console.error e.message.red.underline
+      return
+    else
+      throw error
 
   # Public: Run a function inside of a db transaction
   #
