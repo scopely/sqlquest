@@ -132,6 +132,34 @@ class Quest extends EventEmitter
       console.log "No quest module found. Just running SQL.".bold
       @table @sql(file: findSql(@questPath), @opts)
 
+  # Public: Run a function inside of a db transaction
+  #
+  # Does what it says on the tin. Just runs `BEGIN`, executes your code (which
+  # presumably executes some sql and stuff), then runs `COMMIT` unless an
+  # uncaught exception occurs.
+  #
+  # * `cb`: {Function} Function to execute.
+  #
+  # ## Examples
+  #
+  # ```coffee
+  # @transaction =>
+  #   @sql file: 'intransaction.sql'
+  # ```
+  #
+  # Returns the result of calling `cb`.
+  transaction: (cb) ->
+    console.log "Beginning transaction".blue.underline
+    @sql "BEGIN;"
+    try
+      cb()
+    catch e
+      console.error "An error occurred, rolling back".red.underline
+      @sql "ROLLBACK;"
+      throw e
+    @sql """-- Ending transaction!
+            COMMIT;"""
+
   # Public: Add a helper to the class prototype.
   #
   # * `name`: {String} name of the helper.
@@ -210,34 +238,6 @@ class Quest extends EventEmitter
       return
     else
       throw error
-
-  # Public: Run a function inside of a db transaction
-  #
-  # Does what it says on the tin. Just runs `BEGIN`, executes your code (which
-  # presumably executes some sql and stuff), then runs `COMMIT` unless an
-  # uncaught exception occurs.
-  #
-  # * `cb`: {Function} Function to execute.
-  #
-  # ## Examples
-  #
-  # ```coffee
-  # @transaction =>
-  #   @sql file: 'intransaction.sql'
-  # ```
-  #
-  # Returns the result of calling `cb`.
-  transaction = (cb) ->
-    console.log "Beginning transaction".blue.underline
-    @sql "BEGIN;"
-    try
-      cb()
-    catch e
-      console.error "An error occurred, rolling back".red.underline
-      @sql "ROLLBACK;"
-      throw e
-    @sql """-- Ending transaction!
-            COMMIT;"""
 
   # Public: Print out rows as a table.
   #
