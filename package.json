@@ -1,6 +1,6 @@
 {
   "name": "sqlquest",
-  "version": "0.4.2",
+  "version": "0.5.0",
   "description": "A sql job runner/DSL",
   "main": "./src/quest.coffee",
   "bin": "./bin/sqlquest",
