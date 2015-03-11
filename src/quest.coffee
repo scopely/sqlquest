@@ -92,19 +92,19 @@ class Quest extends EventEmitter
 
     @registerPlugins()
 
-    @emit "connecting", @client
+    @emit "connectStart", @client
     @client.connect (err) =>
       if err
-        @emit 'connection-error', err
+        @emit 'connectionError', err
         console.error "Couldn't connect!".red.bold
         console.error err.message.red
       else
-        @emit "adventuring"
+        @emit "adventureStart"
         Sync (=> @adventure()), (err, result) =>
           @client.end()
-          @emit 'adventure-finished', result
+          @emit 'adventureFinish', result
           if err or @silentErrors
-            @emit 'adventure-error', err
+            @emit 'adventureError', err
             console.error "Errors occurred!".red.bold
             console.error err.message.red.underline if err
             console.error()
@@ -212,10 +212,13 @@ class Quest extends EventEmitter
     opts.times ?= 10
     opts.silent ?= false
     error = null
-    @emit 'retry-loop', opts
+    @emit 'retryLoopStart', opts
     while opts.times > 0
+      @emit 'retry', opts
       try
-        return cb()
+        result = cb()
+        @emit 'retryLoopFinish', opts, result
+        result
       catch e
         error = e
         console.trace e
@@ -226,12 +229,12 @@ class Quest extends EventEmitter
           console.log "Retries remaining: #{opts.times}".red.bold
           Sync.sleep(opts.wait)
           opts.times -= 1
-          @emit 'retrying', opts
         else
           throw e
 
     # Out of lives, time to give up...
     console.error "Out of lives... I give up.".red.underline
+    @emit 'retryLoopFail', opts, error
     if opts.silent
       @silentErrors = true
       console.error e.message.red.underline
@@ -328,27 +331,27 @@ class Quest extends EventEmitter
     params ?= []
     queries = render rawQueries ? queries, view
     if split
-      @emit 'splitting', queries, view
+      @emit 'splitStart', queries, view
       queries = new Splitter(@splitter).split queries
-      @emit 'split-complete', queries, view
+      @emit 'splitFinish', queries, view
     result = null
     count = queries.length
     time 'Total Execution Time', =>
-      @emit 'executing-queries', queries, view
+      @emit 'stepStart', queries, view
       for i, query of queries
         i = parseInt(i)
         counter = i
         console.log "\nNow executing #{counter+1} of #{count}"
         console.log "\n#{query}\n".green
-        @emit 'executing-query', i, query
+        @emit 'queryStart', i, query
         if cb?
           @client.query(query, params, cb)
         else
           if @time
             result = time 'Execution Time', =>
               @client.query.sync(@client, query, params)
-        @emit 'executed-query', i, query
+        @emit 'queryFinish', i, query
         console.log()
-      @emit 'executed-queries', queries, view
+      @emit 'stepFinish', queries, view
       console.log()
     result
