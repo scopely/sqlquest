@@ -237,7 +237,7 @@ class Quest extends EventEmitter
     @emit 'retryLoopFail', opts, error
     if opts.silent
       @silentErrors = true
-      console.error e.message.red.underline
+      console.error error.message.red.underline
       return
     else
       throw error
