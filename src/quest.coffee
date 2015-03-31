@@ -218,7 +218,7 @@ class Quest extends EventEmitter
       try
         result = cb()
         @emit 'retryLoopFinish', opts, result
-        result
+        return result
       catch e
         error = e
         console.trace e
