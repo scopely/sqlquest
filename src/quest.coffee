@@ -98,6 +98,7 @@ class Quest extends EventEmitter
         @emit 'connectionError', err
         console.error "Couldn't connect!".red.bold
         console.error err.message.red
+        console.error err.stack.red
       else
         @emit "adventureStart"
         Sync (=> @adventure()), (err, result) =>
@@ -106,7 +107,9 @@ class Quest extends EventEmitter
           if err or @silentErrors
             @emit 'adventureError', err
             console.error "Errors occurred!".red.bold
-            console.error err.message.red.underline if err
+            if err
+              console.error err.message.red.underline
+              console.error err.stack.red
             console.error()
             process.exit 1
 
@@ -225,6 +228,7 @@ class Quest extends EventEmitter
         match = (regex) -> e.message.match regex
         if not opts.okErrors or opts.okErrors.some(match)
           console.error "Error occurred: #{e.message}".red.underline
+          console.error e.stack.red
           console.log "Retrying in #{opts.wait}ms.".red.bold
           console.log "Retries remaining: #{opts.times}".red.bold
           Sync.sleep(opts.wait)
@@ -238,6 +242,7 @@ class Quest extends EventEmitter
     if opts.silent
       @silentErrors = true
       console.error error.message.red.underline
+      console.error error.stack
       return
     else
       throw error
