@@ -2,6 +2,74 @@
   "name": "sqlquest",
   "version": "0.6.1",
   "dependencies": {
+    "autobahn": {
+      "version": "0.9.6",
+      "from": "autobahn@0.9.6",
+      "resolved": "https://registry.npmjs.org/autobahn/-/autobahn-0.9.6.tgz",
+      "dependencies": {
+        "when": {
+          "version": "3.7.3",
+          "from": "when@>=2.8.0",
+          "resolved": "https://registry.npmjs.org/when/-/when-3.7.3.tgz"
+        },
+        "ws": {
+          "version": "0.7.1",
+          "from": "ws@>=0.4.31",
+          "resolved": "https://registry.npmjs.org/ws/-/ws-0.7.1.tgz",
+          "dependencies": {
+            "options": {
+              "version": "0.0.6",
+              "from": "options@>=0.0.5",
+              "resolved": "https://registry.npmjs.org/options/-/options-0.0.6.tgz"
+            },
+            "ultron": {
+              "version": "1.0.1",
+              "from": "ultron@>=1.0.0 <1.1.0",
+              "resolved": "https://registry.npmjs.org/ultron/-/ultron-1.0.1.tgz"
+            },
+            "bufferutil": {
+              "version": "1.0.1",
+              "from": "bufferutil@>=1.0.0 <1.1.0",
+              "resolved": "https://registry.npmjs.org/bufferutil/-/bufferutil-1.0.1.tgz",
+              "dependencies": {
+                "bindings": {
+                  "version": "1.2.1",
+                  "from": "bindings@>=1.2.0 <1.3.0",
+                  "resolved": "https://registry.npmjs.org/bindings/-/bindings-1.2.1.tgz"
+                },
+                "nan": {
+                  "version": "1.6.2",
+                  "from": "nan@>=1.6.0 <1.7.0",
+                  "resolved": "https://registry.npmjs.org/nan/-/nan-1.6.2.tgz"
+                }
+              }
+            },
+            "utf-8-validate": {
+              "version": "1.0.1",
+              "from": "utf-8-validate@>=1.0.0 <1.1.0",
+              "resolved": "https://registry.npmjs.org/utf-8-validate/-/utf-8-validate-1.0.1.tgz",
+              "dependencies": {
+                "bindings": {
+                  "version": "1.2.1",
+                  "from": "bindings@>=1.2.0 <1.3.0",
+                  "resolved": "https://registry.npmjs.org/bindings/-/bindings-1.2.1.tgz"
+                },
+                "nan": {
+                  "version": "1.6.2",
+                  "from": "nan@>=1.6.0 <1.7.0",
+                  "resolved": "https://registry.npmjs.org/nan/-/nan-1.6.2.tgz"
+                }
+              }
+            }
+          }
+        },
+        "crypto-js": {
+          "version": "3.1.4",
+          "from": "crypto-js@>=3.1.2-2",
+          "resolved": "https://registry.npmjs.org/crypto-js/-/crypto-js-3.1.4.tgz"
+        }
+      }
+    },
     "cli-table": {
       "version": "0.3.1",
       "from": "cli-table@0.3.1",
@@ -33,6 +101,11 @@
       "version": "3.8.0",
       "from": "lodash@3.8.0",
       "resolved": "https://registry.npmjs.org/lodash/-/lodash-3.8.0.tgz"
+    },
+    "moment": {
+      "version": "2.10.2",
+      "from": "moment@*",
+      "resolved": "https://registry.npmjs.org/moment/-/moment-2.10.2.tgz"
     },
     "mustache": {
       "version": "2.0.0",
