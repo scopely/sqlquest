@@ -1,5 +1,5 @@
 fs = require 'fs'
-_ = require 'underscore'
+_ = require 'lodash'
 toml = require 'toml'
 
 module.exports =
