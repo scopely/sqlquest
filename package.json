@@ -19,8 +19,7 @@
     "read": "1.0.5",
     "request": "2.55.0",
     "sync": "0.2.5",
-    "toml": "2.2.0",
-    "underscore": "1.7.0"
+    "toml": "2.2.0"
   },
   "devDependencies": {
     "grunt": "^0.4.5",
