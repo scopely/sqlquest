@@ -42,3 +42,31 @@ module.exports =
       opts
     else
       opts
+
+  # Private: Merge config and options, consolidating affqis command options.
+  #
+  # We can't just merge in [realm]_host and such with the config in toml files
+  # without some logic to do so.
+  #
+  # Returns {Object} of merged configuration values.
+  mergeConfig: (opts, config) ->
+    affqisConfig = config.affqis ? {}
+    config = _.merge opts, config
+
+    addKeys = (realm, config) ->
+      keys = ["#{realm}_user", "#{realm}_pass",
+              "#{realm}_host", "#{realm}_port",
+              "#{realm}_db"]
+
+      for k in keys
+        if value = config[k]
+          configKey = k.split("_")[1]
+          config.affqis[realm][configKey] = value
+          delete config[k]
+      config
+
+    realms = Object.keys(_.omit(affqisConfig, ["host", "port"]))
+    for realm in realms
+      addKeys realm, config
+
+    config

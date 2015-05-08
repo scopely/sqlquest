@@ -8,7 +8,7 @@ _ = require 'lodash'
 Sync = require 'sync'
 
 {findSql, findQuest} = require './hunter'
-{readConfig, addAffqisOpts} = require './config'
+{readConfig, addAffqisOpts, mergeConfig} = require './config'
 
 # Private: Split a list the first instance of an element
 #
@@ -74,13 +74,12 @@ options =
     help: "Everything after this is passed to the quest."
 
 config = readConfig()
-console.log config
 options = addAffqisOpts(options, config)
 opts = nomnom()
   .script 'sqlquest'
   .options options
   .parse(args)
-config = _.merge opts, config
+config = mergeConfig opts, config
 
 # Private: Entry point function.
 #
