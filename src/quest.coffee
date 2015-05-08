@@ -125,6 +125,10 @@ class Quest extends EventEmitter
         plugin = path.join(@questPath, plugin)
       require(plugin)(@)
 
+  # Private: Set up connections to databases.
+  #
+  # Sets up the @connections object with db names to affqis connection ids.
+  # There's special handling of postgres until we have support in affqis.
   setupDbClients: ->
     @connections ?= {}
     for db in @databases
