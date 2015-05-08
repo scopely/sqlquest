@@ -81,26 +81,16 @@ opts = nomnom()
   .parse(args)
 config = mergeConfig opts, config
 
-# Private: Entry point function.
-#
-# Tries to find and run the specified quest. Handle errors if
-# they boil up.
-#
-# * `opts`: Merged toml config and command line options.
-# * `questOpts` The {Object} output of parsing quest args with nomnom.
-main = (opts, questOpts) ->
-  printHeader = (text) ->
-    console.log '########################################################'.gray
-    console.log text.gray.bold
-    console.log '########################################################'.gray
+printHeader = (text) ->
+  console.log '########################################################'.gray
+  console.log text.gray.bold
+  console.log '########################################################'.gray
 
-  quests = path.resolve(opts.quests)
+quests = path.resolve(config.quests)
 
-  [questPath, Quest] = findQuest(quests, opts.quest)
+[questPath, Quest] = findQuest(quests, config.quest)
 
-  printHeader "Beginning the #{opts.quest} quest!"
+printHeader "Beginning the #{config.quest} quest!"
 
-  # Instantiate quest, which runs `adventure`.
-  quest = new Quest(opts, path.dirname(questPath), questOpts)
-
-main config, questOpts
+# Instantiate quest, which runs `adventure`.
+new Quest(config, path.dirname(questPath), questOpts)
