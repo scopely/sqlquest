@@ -2,6 +2,7 @@ Sync = require 'sync'
 autobahn = require 'autobahn'
 _ = require 'lodash'
 moment = require 'moment'
+util = require 'util'
 
 # Private: Establish a connection to an affqis wamp server.
 #
@@ -127,7 +128,10 @@ disconnect = ({connection, session, id}) ->
 #
 # Returns an {Array} of {Object}s representing rows.
 aql = ({session, id}, sql) ->
-  executeQuery.sync null, session, id, sql
+  try
+    executeQuery.sync(null, session, id, sql)
+  catch e
+    throw new Error("WAMP says: #{util.inspect(e)}")
 
 module.exports =
   connect: connectAffqis
