@@ -10,7 +10,8 @@ util = require 'util'
 # * `host`: {String} hostname of affqis server.
 # * `port`: {Number} port number of affqis server.
 # * `cb`: {Function} callback to get called with an error if we
-#         fail to establish a connection, or a session if we succeed.
+#         fail to establish a connection, or an {Object} with
+#         keys for `connection` and `session`
 connect = (realm, host, port, cb) ->
   affqisUrl = "ws://#{host}:#{port}/affqis"
   connection = new autobahn.Connection
@@ -18,8 +19,8 @@ connect = (realm, host, port, cb) ->
     realm: realm
     max_retries: 0
 
-    cb(null, session)
   connection.onopen = (session) ->
+    cb(null, session: session, connection: connection)
 
   connection.onclose = (reason) =>
     switch reason
@@ -42,12 +43,8 @@ connect = (realm, host, port, cb) ->
 # * `config`: {Object} with host, port, user, and optionally db keys.
 # * `cb`: {Function} Callback to be called with an error if we get a wamp
 #         failure, or if successful the connection id.
-connectJdbc = (session, {host, port, db, user}, cb) ->
-  if db?
-    connectArgs = [user, host, port, db]
-  else
-    connectArgs = [user, host, port]
-  session.call('connect', connectArgs)
+connectJdbc = ({session}, connectArgs, cb) ->
+  session.call('connect', [], connectArgs)
     .then((result) -> cb null, result)
     .catch(cb)
 
@@ -77,13 +74,14 @@ normalizeRow = (row) ->
 # * `cb`: {Function} callback that'll get called with errors or our results.
 executeQuery = (session, id, hql, cb) ->
   rows = []
-  session.call('execute', [id, hql])
-   .then((topic) ->
-     session.subscribe(topic, ([event, row]) ->
-       if event == "row"
-         rows.push JSON.parse(row)
-       else
-         cb null,
+  session.call('execute', [], connectionId: id, sql: hql)
+  .then(({args: [topic, streamProc]}) ->
+    session.subscribe(topic, ([event, row]) ->
+      switch event
+        when "row" then rows.push JSON.parse(row)
+        when "update_count" then cb null, updateCount: row
+        else
+          cb null,
           rows: rows.map(normalizeRow)
           rowCount: rows.map.length
           fields: rows[0].map((data) -> _.pick data, ['name', 'type'])
@@ -106,7 +104,8 @@ connectAffqis = (realm, config) ->
     port: realmConfig.port
     user: realmConfig.user
 
-  {session: session, id: jdbcId}
+  session.id = jdbcId
+  session
 
 # Public: Disconnect Affqis's JDBC connection and the Affqis connection itself.
 #
