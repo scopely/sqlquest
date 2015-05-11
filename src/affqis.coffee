@@ -65,6 +65,20 @@ normalizeRow = (row) ->
     acc
   row.reduce(addColumn, {})
 
+# Private: Sample a row and produce column names and types.
+#
+# For node-postgres compatibility, sample a row (if we don't have one to
+# sample we're kinda screwed, but that's life) and extract type info and
+# column names out.
+#
+# Returns an {Object} of column names to type names.
+getFields = (row) ->
+  addField = (acc, {name, type}) ->
+    [table, column] = name.split(".")
+    acc[column or table] = type
+    acc
+  row.reduce(addField, {})
+
 # Private: Execute a query via affqis.
 #
 # * `session`: Autobahn affqis session.
@@ -82,10 +96,11 @@ executeQuery = (session, id, hql, cb) ->
         else
           cb null,
           rows: rows.map(normalizeRow)
-          rowCount: rows.map.length
-          fields: rows[0].map((data) -> _.pick data, ['name', 'type'])
-     ).catch(cb))
-   .catch(cb)
+          rowCount: rows.length
+          fields: getFields(rows[0]))
+      .then(-> session.call(streamProc).catch(cb))
+      .catch(cb)
+   ).catch(cb)
 
 # Public: Connect to affqis and establish a JDBC connection.
 #
