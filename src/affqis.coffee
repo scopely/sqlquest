@@ -108,6 +108,17 @@ affqisConnect = (realm, config) ->
   {session: session, id: jdbcId}
 
 # Public: Given a session, from `affqisConnect`, run a query and return results.
+# Public: Disconnect Affqis's JDBC connection and the Affqis connection itself.
+#
+# * `session`: {Object} with session, connection, and id keys.
+disconnect = ({connection, session, id}) ->
+  asyncCall = (id, cb) ->
+    session.call("disconnect", [], connectionId: id)
+    .then((status) ->
+      connection.close()
+      cb(null, status))
+    .catch(cb)
+  asyncCall.sync null, id
 # * `session`: {Object} returned from `affqisConnect`
 # * `sql`: {String} SQL statement (one single statement) to execute.
 #
@@ -118,3 +129,4 @@ aql = ({session, id}, sql) ->
 module.exports =
   affqisConnect: affqisConnect
   aql: aql
+  disconnect: disconnect
