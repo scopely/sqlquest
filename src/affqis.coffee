@@ -12,15 +12,15 @@ moment = require 'moment'
 #         fail to establish a connection, or a session if we succeed.
 connect = (realm, host, port, cb) ->
   affqisUrl = "ws://#{host}:#{port}/affqis"
-  @connection = new autobahn.Connection
+  connection = new autobahn.Connection
     url: affqisUrl
     realm: realm
     max_retries: 0
 
-  @connection.onopen = (session) ->
     cb(null, session)
+  connection.onopen = (session) ->
 
-  @connection.onclose = (reason) =>
+  connection.onclose = (reason) =>
     switch reason
       when "unreachable"
         console.error "Cannot establish connection to #{affqisUrl}"
