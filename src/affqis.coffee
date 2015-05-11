@@ -29,8 +29,6 @@ connect = (realm, host, port, cb) ->
         cb(new Error(reason))
       when "lost"
         console.error "Connection to #{affqisUrl} lost"
-      when "closed"
-        console.log "Connection to #{affqisUrl} closed"
 
   connection.open()
 
