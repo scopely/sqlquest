@@ -341,6 +341,42 @@ Finally, `Quest` is an `EventEmitter`. As such, you can capture `Quest`'s
 internal events and also add your own in your plugins. Poke around the `Quest`
 class to see which events you can track!
 
+
+### Affqis
+
+SQLQuest 0.7.0 and up supports a new way of connecting to databases. You can use
+Scopely's [Affqis](https://github.com/scopely/affqis) project to connect to
+databases it supports (currently just hive). Until this is all tested and
+stable, sqlquest supports the historical method of connecting via node-postgres
+and your quests will likely continue to work with no change.
+
+Eventually, Affqis will support multiple databases including Redshift/Postgres
+and as such we'll be able to drop node-postgres.
+
+To configure and use Affqis databases, configure it like so:
+
+```toml
+[affqis]
+host = "localhost"
+port = 8080
+
+[affqis.hive]
+host = "my.hive-server-host.com"
+port = 10000
+user = "auser"
+```
+
+Then in your quest, you can specify which databases to target:
+
+```coffee
+class MyQuest extends Quest
+  databases: ["pg", "hive"]
+
+  adventure: ->
+    @sql "select 1" # will run on postgres/redshift
+    @sql text: "select 1", db: "hive" # will run on hive
+```
+
 ### Namespacing
 
 If your helpers aren't going to be fairly uniquely named in some way, it's
