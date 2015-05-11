@@ -97,7 +97,7 @@ executeQuery = (session, id, hql, cb) ->
 #
 # Returns an {Object} with session and id properties, suitable for passing to
 # the also-exported `aql` function.
-affqisConnect = (realm, config) ->
+connectAffqis = (realm, config) ->
   realmConfig = config[realm]
   session = connect.sync null, realm, config.host, config.port
   jdbcId = connectJdbc.sync null, session,
@@ -107,7 +107,6 @@ affqisConnect = (realm, config) ->
 
   {session: session, id: jdbcId}
 
-# Public: Given a session, from `affqisConnect`, run a query and return results.
 # Public: Disconnect Affqis's JDBC connection and the Affqis connection itself.
 #
 # * `session`: {Object} with session, connection, and id keys.
@@ -119,6 +118,10 @@ disconnect = ({connection, session, id}) ->
       cb(null, status))
     .catch(cb)
   asyncCall.sync null, id
+
+
+# Public: Given a session from `connectAffqis`, run a query and return results.
+#
 # * `session`: {Object} returned from `affqisConnect`
 # * `sql`: {String} SQL statement (one single statement) to execute.
 #
@@ -127,6 +130,6 @@ aql = ({session, id}, sql) ->
   executeQuery.sync null, session, id, sql
 
 module.exports =
-  affqisConnect: affqisConnect
+  connect: connectAffqis
   aql: aql
   disconnect: disconnect
