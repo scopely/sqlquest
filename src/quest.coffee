@@ -181,15 +181,15 @@ class Quest extends EventEmitter
   # Returns the result of calling `cb`.
   transaction: (cb) ->
     console.log "Beginning transaction".blue.underline
-    @sql "BEGIN;"
+    @sql "BEGIN"
     try
       cb()
     catch e
       console.error "An error occurred, rolling back".red.underline
-      @sql "ROLLBACK;"
+      @sql "ROLLBACK"
       throw e
     @sql """-- Ending transaction!
-            COMMIT;"""
+            COMMIT"""
 
   # Public: Add a helper to the class prototype.
   #
