@@ -1,18 +1,19 @@
 # Questing library! Everything you need for your adventure. It isn't
 # safe to go alone.
-Sync = require 'sync'
 fs = require 'fs'
 path = require 'path'
-pg = require('pg').native
 colors = require 'colors'
 Mustache = require 'mustache'
 Table = require 'cli-table'
 _ = require 'lodash'
 EventEmitter = require('events').EventEmitter
+Sync = require 'sync'
 
 {findSql} = require './hunter'
 Splitter = require './split'
 {time} = require './timing'
+pg = require './pg'
+affqis = require './affqis'
 
 # Private: Render text with a view, or return text if view isn't a thing.
 render = (text, view) ->
@@ -71,47 +72,47 @@ class Quest extends EventEmitter
   #   * `splitter`: {String} URL to hit to split sql.
   # * `questPath`: {String} path to this quest.
   # * `questOpts`: {Object} Command line options for the quest.
-  constructor: ({host, port, db, user, pass, url, time, splitter, output},
-                @questPath, @opts) ->
-    connString = url ? "postgres://#{user}:#{pass}@#{host}:#{port}/#{db}"
+  constructor: (config, @questPath, @opts) ->
+    @config = config
     @silentErrors = false
-    @splitter = splitter
-    @output = output
-    @time = time
+    @splitter = config.splitter
+    @output = config.output
+    @time = config.time
     @name = path.basename(@questPath)
     @sqlPath = path.join @questPath, 'sql'
-    @client = new pg.Client(connString)
-    @setAdventure()
     @options ?= {}
     @plugins ?= []
+    @databases ?= ["pg"]
+    @connections = {}
 
     @opts = require('nomnom')
       .options @options
       .usage "sqlquest #{@name} [OPTIONS]"
       .parse @opts
 
-    @registerPlugins()
+    # In case there isn't an adventure method, use a reasonable default.
+    @setAdventure()
 
-    @emit "connectStart", @client
-    @client.connect (err) =>
-      if err
-        @emit 'connectionError', err
-        console.error "Couldn't connect!".red.bold
-        console.error err.message.red
-        console.error err.stack.red
-      else
+    Sync(
+      =>
+        @emit "connectStart", @databases
+        @setupDbClients()
+        @registerPlugins()
+        @client = pg.connect.sync(null, @client) if @client?
         @emit "adventureStart"
-        Sync (=> @adventure()), (err, result) =>
-          @client.end()
-          @emit 'adventureFinish', result
-          if err or @silentErrors
-            @emit 'adventureError', err
-            console.error "Errors occurred!".red.bold
-            if err
-              console.error err.message.red.underline
-              console.error err.stack.red
-            console.error()
-            process.exit 1
+        @adventure()
+      (err, result) =>
+        @tearDownDbClients()
+        @emit 'adventureFinish', result
+        if err or @silentErrors
+          @emit 'adventureError', err
+          console.error "Errors occurred!".red.bold
+          if err
+            console.error err.message.red.underline
+            console.error err.stack.red
+          console.error()
+          process.exit 1
+    )
 
   # Private: Register plugins specified in @plugins.
   #
@@ -123,6 +124,33 @@ class Quest extends EventEmitter
       unless _.startsWith(plugin, '/') or not _.startsWith(plugin, '.')
         plugin = path.join(@questPath, plugin)
       require(plugin)(@)
+
+  # Private: Set up connections to databases.
+  #
+  # Sets up the @connections object with db names to affqis connection ids.
+  # There's special handling of postgres until we have support in affqis.
+  setupDbClients: ->
+    @connections ?= {}
+    for db in @databases
+      console.log "Establishing a connection to #{db}...".gray.italic
+      if db == "pg"
+        @connections[db] = if @config.url?
+          @client = pg.createClient @config.url
+          @client
+        else
+          {host, port, db, user, pass} = @config
+          @client = pg.createClient host, port, db, user, pass
+          @client
+      else
+        @connections[db] = affqis.connect(db, @config.affqis)
+
+  # Private: Disconnect JDBC connections.
+  tearDownDbClients: ->
+    for db, connection of @connections
+      if db == "pg"
+        @client.end()
+      else
+        affqis.disconnect(connection)
 
   # Private: Setup the {Quest::adventure} function.
   #
@@ -153,15 +181,15 @@ class Quest extends EventEmitter
   # Returns the result of calling `cb`.
   transaction: (cb) ->
     console.log "Beginning transaction".blue.underline
-    @sql "BEGIN;"
+    @sql "BEGIN"
     try
       cb()
     catch e
       console.error "An error occurred, rolling back".red.underline
-      @sql "ROLLBACK;"
+      @sql "ROLLBACK"
       throw e
     @sql """-- Ending transaction!
-            COMMIT;"""
+            COMMIT"""
 
   # Public: Add a helper to the class prototype.
   #
@@ -320,11 +348,13 @@ class Quest extends EventEmitter
   # or file passed. This object will have a `rows` property.
   sql: (queries, view, cb) ->
     split = true
+    target = @databases[0]
     if view instanceof Function
       cb = view
       view = null
     if typeof(queries) != 'string'
       split = queries.split if queries.split?
+      db = queries.db if queries.db?
       params = queries.params
       if queries.file
         if queries.file == path.resolve(queries.file)
@@ -354,7 +384,10 @@ class Quest extends EventEmitter
         else
           if @time
             result = time 'Execution Time', =>
-              @client.query.sync(@client, query, params)
+              if target == "pg"
+                @client.query.sync(@client, query, params)
+              else
+                affqis.aql @connections[target], query
         @emit 'queryFinish', i, query
         console.log()
       @emit 'stepFinish', queries, view

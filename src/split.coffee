@@ -1,6 +1,7 @@
 # Functions for splitting SQL with APIs and what not.
 request = require 'request'
 sync = require 'sync'
+_ = require 'lodash'
 
 module.exports =
 class Splitter
@@ -38,4 +39,4 @@ class Splitter
         name: "SplitError"
         status: response.statusCode
         message: body
-    JSON.parse(body).result.filter (s) -> s
+    JSON.parse(body).result.filter(_.identity).map (s) -> _.trimRight s, ';'

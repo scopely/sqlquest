@@ -4,9 +4,11 @@ fs = require 'fs'
 colors = require 'colors'
 read = require 'read'
 nomnom = require 'nomnom'
+_ = require 'lodash'
+Sync = require 'sync'
 
 {findSql, findQuest} = require './hunter'
-{mergeConfig} = require './config'
+{readConfig, addAffqisOpts, mergeConfig} = require './config'
 
 # Private: Split a list the first instance of an element
 #
@@ -28,79 +30,67 @@ splitAt = (target, items) ->
 # Separate all args after `--` so we can pass those on to the quest.
 [args, questOpts] = splitAt '--', process.argv.slice(2)
 
+options =
+  user:
+    abbr: 'u'
+    help: "PG/Redshift username"
+  pass:
+    abbr: 'P'
+    help: "PG/Redshift password"
+    default: process.env.PGPASSWORD
+  host:
+    abbr: 'H'
+    help: 'PG/Redshift host'
+  port:
+    abbr: 'p'
+    help: "PG/Redshift port"
+    default: 5432
+  url:
+    abbr: 'U'
+    help: "PG/Redshift URL (postgres://user:pass@host:port/db)"
+  db:
+    abbr: 'd'
+    help: "PG/Redshift DB"
+  quests:
+    abbr: 'q'
+    default: 'quests'
+    help: "Where to find quests"
+  splitter:
+    abbr: 's'
+    help: "Splitter API URL to use [http://sqlformat.org/api/v1/split]"
+  time:
+    abbr: 't'
+    flag: true
+    default: true
+    help: "Print the runtime of each query."
+  quest:
+    position: 0
+    help: "Which quest to embark on!"
+  output:
+    abbr: 'o'
+    help: "Options are: table or json"
+    default: "table"
+  '':
+    help: "Everything after this is passed to the quest."
+
+config = readConfig()
+options = addAffqisOpts(options, config)
 opts = nomnom()
   .script 'sqlquest'
-  .option 'user', abbr: 'u', help: 'Database username'
-  .option 'pass', abbr: 'P', help: 'Database password'
-  .option 'host', abbr: 'H', help: 'Database host'
-  .option 'port', abbr: 'p', help: 'Database port', default: 5432
-  .option 'url', abbr: 'U', help: """Connection URL:
-                                     (postgres://user:pass@host:port/db)"""
-  .option 'db', abbr: 'd', help: 'Database name'
-  .option 'quests', abbr: 'q', help: 'Where to find quests'
-  .option('splitter',
-    abbr: 's',
-    help: 'Splitter API URL to use [http://sqlformat.org/api/v1/split]')
-  .option('config',
-    abbr: 'c',
-    default: 'config.toml',
-    help: 'Read config from this file'
-  )
-  .option('time',
-    abbr: 't',
-    flag: true,
-    default: true
-    help: 'Print the runtime of each query'
-  )
-  .option 'quest', position: 0, help: 'Which quest to embark on!'
-  .option 'output',
-    abbr: 'o',
-    help: 'Options are: table or json',
-    default: 'table'
-  .option '', help: "Everything after this is passed to the quest."
+  .options options
   .parse(args)
+config = mergeConfig opts, config
 
-opts = mergeConfig(opts.config, opts)
+printHeader = (text) ->
+  console.log '########################################################'.gray
+  console.log text.gray.bold
+  console.log '########################################################'.gray
 
-# Private: Entry point function.
-#
-# Tries to find and run the specified quest. Handle errors if
-# they boil up.
-#
-# * `opts`: The {Object} output of parsing args with nomnom.
-# * `questOpts` The {Object} output of parsing quest args with nomnom.
-main = (opts, questOpts) ->
-  printHeader = (text) ->
-    console.log '########################################################'.gray
-    console.log text.gray.bold
-    console.log '########################################################'.gray
+quests = path.resolve(config.quests)
 
-  if opts.quests
-    # Path to quests was passed in
-    quests = path.resolve(opts.quests)
-  else
-    # Path to quests wasn't passed in, assume it's in the current directory.
-    quests = path.resolve('quests')
+[questPath, Quest] = findQuest(quests, config.quest)
 
-  [questPath, Quest] = findQuest(quests, opts.quest)
+printHeader "Beginning the #{config.quest} quest!"
 
-  printHeader "Beginning the #{opts.quest} quest!"
-
-  # Instantiate quest, which runs `adventure`.
-  quest = new Quest(opts, path.dirname(questPath), questOpts)
-
-# If opts wasn't passed on the command line, set it to the PGPASSWORD
-# environment variable.
-opts.pass ?= process.env.PGPASSWORD
-
-if opts.pass ? opts.url?
-  main opts, questOpts
-else
-  # No password was passed and no environment variable exists. Prompt
-  # the user for input.
-  read prompt: 'Password:', silent: true, (err, pass) ->
-    if pass
-      opts.pass = pass
-      main opts, questOpts
-    else
-      console.error "A password is necessary to venture forth.".red
+# Instantiate quest, which runs `adventure`.
+new Quest(config, path.dirname(questPath), questOpts)
