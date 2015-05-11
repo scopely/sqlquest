@@ -59,8 +59,9 @@ connectJdbc = ({session}, connectArgs, cb) ->
 normalizeRow = (row) ->
   addColumn = (acc, {name, type, value}) ->
     if type == "date" or type == "timestamp"
-    acc[name.split('.')[1]] = value
       value = moment(value).toDate()
+    [table, column] = name.split(".")
+    acc[column or table] = value
     acc
   row.reduce(addColumn, {})
 
