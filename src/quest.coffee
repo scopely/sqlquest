@@ -13,7 +13,7 @@ Sync = require 'sync'
 Splitter = require './split'
 {time} = require './timing'
 pg = require './pg'
-{affqisConnect, aql} = require './affqis'
+affqis = require './affqis'
 
 # Private: Render text with a view, or return text if view isn't a thing.
 render = (text, view) ->
@@ -102,7 +102,7 @@ class Quest extends EventEmitter
         @emit "adventureStart"
         @adventure()
       (err, result) =>
-        @client?.end()
+        @tearDownDbClients()
         @emit 'adventureFinish', result
         if err or @silentErrors
           @emit 'adventureError', err
@@ -142,7 +142,15 @@ class Quest extends EventEmitter
           @client = pg.createClient host, port, db, user, pass
           @client
       else
-        @connections[db] = affqisConnect(db, @config.affqis)
+        @connections[db] = affqis.connect(db, @config.affqis)
+
+  # Private: Disconnect JDBC connections.
+  tearDownDbClients: ->
+    for db, connection of @connections
+      if db == "pg"
+        @client.end()
+      else
+        affqis.disconnect(connection)
 
   # Private: Setup the {Quest::adventure} function.
   #
@@ -340,11 +348,13 @@ class Quest extends EventEmitter
   # or file passed. This object will have a `rows` property.
   sql: (queries, view, cb) ->
     split = true
+    target = @databases[0]
     if view instanceof Function
       cb = view
       view = null
     if typeof(queries) != 'string'
       split = queries.split if queries.split?
+      db = queries.db if queries.db?
       params = queries.params
       if queries.file
         if queries.file == path.resolve(queries.file)
@@ -374,7 +384,10 @@ class Quest extends EventEmitter
         else
           if @time
             result = time 'Execution Time', =>
-              @client.query.sync(@client, query, params)
+              if target == "pg"
+                @client.query.sync(@client, query, params)
+              else
+                affqis.aql @connections[target], query
         @emit 'queryFinish', i, query
         console.log()
       @emit 'stepFinish', queries, view
