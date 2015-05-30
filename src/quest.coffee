@@ -336,6 +336,7 @@ class Quest extends EventEmitter
   #     * `text`: {String} of sql to execute.
   #     * `file`: {String} filename of a file in the quest's `sql` directory.
   #               If the path is absolute, will just execute it wherever it is.
+  #     * `db`: {String} name of configured database, defaults to first db
   #     * `split`: {Boolean} split the sql queries into chunks using an API.
   #       This allows timing of individual queries, as well as more granular
   #       error handling. `true` by default.
@@ -347,24 +348,21 @@ class Quest extends EventEmitter
   # Returns an {Object} with the results of the last query in the block of sql
   # or file passed. This object will have a `rows` property.
   sql: (queries, view, cb) ->
-    split = true
-    target = @databases[0]
-    if view instanceof Function
-      cb = view
-      view = null
-    if typeof(queries) != 'string'
-      split = queries.split if queries.split?
-      target = queries.db if queries.db?
-      params = queries.params
-      if queries.file
-        if queries.file == path.resolve(queries.file)
-          sqlPath = queries.file
-        else
-          sqlPath = path.join @sqlPath, queries.file
-        console.log ">>".blue.bold, "#{sqlPath}".blue.bold if queries.file
-      rawQueries = queries.text or fs.readFileSync(sqlPath, encoding: 'utf-8')
-    params ?= []
-    queries = render rawQueries ? queries, view
+    # make arguments consistent
+    {cb, view} = cb: view if view instanceof Function
+    queries = {text: queries} if typeof(queries) is 'string'
+    
+    split = queries.split ? true
+    target = queries.db ? @databases[0]
+    params = queries.params ? []
+    {file, text} = queries
+    
+    if file
+      file = path.join @sqlPath, file unless path.isAbsolute file
+      console.log ">>".blue.bold, file.blue.bold
+      text = fs.readFileSync(file, encoding: 'utf-8')
+
+    queries = render text, view
     if split
       @emit 'splitStart', queries, view
       queries = new Splitter(@splitter).split queries
@@ -373,23 +371,20 @@ class Quest extends EventEmitter
     count = queries.length
     time 'Total Execution Time', =>
       @emit 'stepStart', queries, view
-      for i, query of queries
-        i = parseInt(i)
-        counter = i
-        console.log "\nNow executing #{counter+1} of #{count}"
+      for query, i in queries
+        console.log "\nNow executing #{i+1} of #{count}"
         console.log "\n#{query}\n".green
         @emit 'queryStart', i, query
         if cb?
           @client.query(query, params, cb)
-        else
-          if @time
-            result = time 'Execution Time', =>
-              if target == "pg"
-                @client.query.sync(@client, query, params)
-              else
-                affqis.aql @connections[target], query
+        else if @time
+          result = time 'Execution Time', =>
+            if target == "pg"
+              @client.query.sync @client, query, params
+            else
+              affqis.aql @connections[target], query
         @emit 'queryFinish', i, query
         console.log()
       @emit 'stepFinish', queries, view
       console.log()
-    result
+    return result
