@@ -117,6 +117,7 @@ connectAffqis = (realm, config) ->
     host: realmConfig.host
     port: realmConfig.port
     user: realmConfig.user
+    database: realmConfig.db
 
   session.id = jdbcId
   session
