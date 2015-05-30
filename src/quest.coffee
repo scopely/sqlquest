@@ -354,7 +354,7 @@ class Quest extends EventEmitter
       view = null
     if typeof(queries) != 'string'
       split = queries.split if queries.split?
-      db = queries.db if queries.db?
+      target = queries.db if queries.db?
       params = queries.params
       if queries.file
         if queries.file == path.resolve(queries.file)
