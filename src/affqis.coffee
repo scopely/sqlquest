@@ -97,9 +97,8 @@ executeQuery = (session, id, hql, cb) ->
           cb null,
           rows: rows.map(normalizeRow)
           rowCount: rows.length
-          fields: getFields(rows[0]))
-      .then(-> session.call(streamProc).catch(cb))
-      .catch(cb)
+          fields: getFields(rows[0]) if rows.length > 0
+    ).then(-> session.call(streamProc).catch(cb)).catch(cb)
    ).catch(cb)
 
 # Public: Connect to affqis and establish a JDBC connection.
