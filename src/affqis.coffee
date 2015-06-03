@@ -13,7 +13,11 @@ util = require 'util'
 #         fail to establish a connection, or an {Object} with
 #         keys for `connection` and `session`
 connect = (realm, host, port, cb) ->
-  affqisUrl = "ws://#{host}:#{port}/affqis"
+  if port
+    affqisUrl = "ws://#{host}:#{port}/affqis"
+  else
+    affqisUrl = "ws://#{host}/affqis"
+
   connection = new autobahn.Connection
     url: affqisUrl
     realm: realm
