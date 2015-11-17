@@ -2,5 +2,7 @@ node_modules/
 lib/
 npm-debug.log
 .idea/
+.gradle/
+drivers/
 
 config.toml

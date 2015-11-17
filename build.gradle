@@ -1,0 +1,22 @@
+apply plugin: 'java'
+
+repositories {
+    mavenCentral()
+    maven {
+        url "https://repository.cloudera.com/artifactory/cloudera-repos"
+    }
+}
+
+configurations {
+    hadoop
+}
+
+dependencies {
+    hadoop 'org.apache.hadoop:hadoop-common:2.6.0-cdh5.4.4'
+    hadoop 'org.apache.hive:hive-jdbc:1.1.0-cdh5.4.4'
+}
+
+task copyDrivers(type: Copy) {
+    from configurations.hadoop
+    into "drivers/"
+}
