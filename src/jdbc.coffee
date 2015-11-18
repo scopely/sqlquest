@@ -1,3 +1,5 @@
+Q = require 'q'
+co = require 'co'
 fs = require 'fs'
 
 class JDBCJVM
@@ -15,19 +17,41 @@ class JDBCJVM
     @config.maxpoolsize ?= 3
 
     @jdbc = new JDBC(@config)
-    @jdbc.initialize((err) -> console.error(err) if err)
 
-jvm = new JDBCJVM
-  url: process.argv[2]
-  drivername: 'org.apache.hive.jdbc.HiveDriver'
+  init: ->
+    Q.ninvoke @jdbc, "initialize"
 
-conn = jvm.jdbc.reserve (err, {conn: conn}) ->
-  conn.createStatement (err, statement) ->
-    console.error err if err
-    statement.executeQuery process.argv[3], (err, res) ->
-      console.error err if err
-      res.toObject (err, obj) ->
-        console.error err if err
-        console.log obj
-  jvm.jdbc.release conn, (err) ->
-    console.error err if err
+  getConnection: ->
+    Q.ninvoke @jdbc, "reserve"
+
+  releaseConnection: (conn) ->
+    Q.ninvoke @jdbc, "release", conn
+
+  createStatement: (conn) ->
+    Q.ninvoke conn, "createStatement"
+
+  executeQuery: (statement, sql) ->
+    deferred = Q.defer()
+    statement.executeQuery sql, (err, res) ->
+      if err
+        deferred.reject err
+      else
+        res.toObject (err, obj) ->
+          if err
+            deferred.reject err
+          else
+            deferred.resolve obj
+    deferred.promise
+
+co(->
+  jvm = new JDBCJVM
+    url: process.argv[2]
+    drivername: 'org.apache.hive.jdbc.HiveDriver'
+  yield jvm.init()
+  connection = yield jvm.getConnection()
+  connection = connection.conn
+  statement = yield jvm.createStatement(connection)
+  results = yield jvm.executeQuery(statement, process.argv[3])
+  yield jvm.releaseConnection(connection)
+  results
+).then(console.log).catch(console.error)
