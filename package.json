@@ -9,6 +9,7 @@
   "dependencies": {
     "autobahn": "0.9.6",
     "cli-table": "0.3.1",
+    "co": "4.6.0",
     "coffee-script": "1.10.0",
     "colors": "1.1.0",
     "jdbc": "0.1.4",
@@ -18,6 +19,7 @@
     "nomnom": "1.8.1",
     "pg": "4.3.0",
     "pg-native": "1.8.0",
+    "q": "1.4.1",
     "read": "1.0.5",
     "request": "2.55.0",
     "sync": "0.2.5",
