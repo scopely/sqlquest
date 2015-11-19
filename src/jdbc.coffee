@@ -42,8 +42,11 @@ class JDBCJVM
         for i in [0..logLength-1]
           console.log logs.getSync(i)
 
-  resultSetToObj: (resultset) ->
-    Q.ninvoke resultset, "toObject"
+  processResultSet: (resultset) ->
+    if resultset and isNaN(resultset)
+      Q.ninvoke resultset, "toObject"
+    else
+      Q(affected: resultset)
 
   executeQuery: (statement, sql, logs) ->
     promise = Q.ninvoke(statement, "execute", sql)

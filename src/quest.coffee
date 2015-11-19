@@ -167,15 +167,15 @@ class Quest extends EventEmitter
   # Returns the result of calling `cb`.
   transaction: (cb) ->
     console.log "Beginning transaction".blue.underline
-    @sql "BEGIN"
+    yield @sql "BEGIN"
     try
-      cb()
+      yield cb()
     catch e
       console.error "An error occurred, rolling back".red.underline
-      @sql "ROLLBACK"
+      yield @sql "ROLLBACK"
       throw e
-    @sql """-- Ending transaction!
-            COMMIT"""
+    yield @sql """-- Ending transaction!
+                  COMMIT"""
 
   # Public: Add a helper to the class prototype.
   #
@@ -233,9 +233,9 @@ class Quest extends EventEmitter
     while opts.times > 0
       @emit 'retry', opts
       try
-        result = cb()
+        result = yield cb()
         @emit 'retryLoopFinish', opts, result
-        return result
+        result
       catch e
         error = e
         console.trace e
@@ -255,9 +255,11 @@ class Quest extends EventEmitter
     @emit 'retryLoopFail', opts, error
     if opts.silent
       @silentErrors = true
-      console.error error.message.red.underline
-      console.error error.stack
-      return
+      if error.stack
+        console.error error.stack.red
+      else
+        console.error error.message.red
+      yield Q()
     else
       throw error
 
@@ -385,7 +387,4 @@ class Quest extends EventEmitter
 
     @emit 'stepFinish', queries, view
     console.log()
-    if result and isNaN(result)
-      yield jvm.resultSetToObj(result)
-    else
-      result
+    yield jvm.processResultSet(result)
