@@ -105,10 +105,10 @@ class Quest extends EventEmitter
       .catch (err) =>
         if err or @silentErrors
           @emit 'adventureError', err
-          console.error "Errors occurred!".red.bold
-          if err
-            console.error err.message.red.underline
+          if err.stack
             console.error err.stack.red
+          else
+            console.error err.message.red
           console.error()
           @tearDownDbClients()
           process.exit 1
