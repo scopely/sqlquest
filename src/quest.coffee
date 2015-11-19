@@ -327,18 +327,12 @@ class Quest extends EventEmitter
   #       error handling. `true` by default.
   #     * `params`: {Array} of parameters to fill in node-postgres query params.
   # * `view`: (optional) {Object} to fill in a mustache template with.
-  # * `cb`: (optional) Use a callback rather than be synchronous. NOT
-  #   RECOMMENDED UNLESS YOU KNOW PRECISELY WHAT YOU'RE DOING.
   #
   # Returns an {Object} with the results of the last query in the block of sql
   # or file passed. This object will have a `rows` property.
-  sql: (queries, view, cb) ->
+  sql: (queries, view) ->
     split = true
     target = Object.keys(@config.databases)[0]
-
-    if view instanceof Function
-      cb = view
-      view = null
 
     if typeof(queries) != 'string'
       split = queries.split if queries.split?
