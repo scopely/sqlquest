@@ -49,8 +49,10 @@ class JDBCJVM
     promise = Q.ninvoke(statement, "execute", sql)
     if logs
       interval = setInterval (=> @logQueryLogs(statement)), 1000
-      promise.then (res) ->
+      promise.then (res) =>
         clearInterval interval
+        # Make sure we've logged all logs.
+        @logQueryLogs statement
         res
     else
       promise
