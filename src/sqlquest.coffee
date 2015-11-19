@@ -5,10 +5,9 @@ colors = require 'colors'
 read = require 'read'
 nomnom = require 'nomnom'
 _ = require 'lodash'
-Sync = require 'sync'
 
 {findSql, findQuest} = require './hunter'
-{readConfig, addAffqisOpts, mergeConfig} = require './config'
+{readConfig, mergeConfig} = require './config'
 
 # Private: Split a list the first instance of an element
 #
@@ -33,24 +32,14 @@ splitAt = (target, items) ->
 options =
   user:
     abbr: 'u'
-    help: "PG/Redshift username"
+    help: "JDBC username"
   pass:
     abbr: 'P'
-    help: "PG/Redshift password"
+    help: "JDBC password"
     default: process.env.PGPASSWORD
-  host:
-    abbr: 'H'
-    help: 'PG/Redshift host'
-  port:
-    abbr: 'p'
-    help: "PG/Redshift port"
-    default: 5432
   url:
     abbr: 'U'
-    help: "PG/Redshift URL (postgres://user:pass@host:port/db)"
-  db:
-    abbr: 'd'
-    help: "PG/Redshift DB"
+    help: "JDBC URL to connect to (jdbc:postgresql://host/db)"
   quests:
     abbr: 'q'
     default: 'quests'
@@ -74,12 +63,11 @@ options =
     help: "Everything after this is passed to the quest."
 
 config = readConfig()
-options = addAffqisOpts(options, config)
 opts = nomnom()
   .script 'sqlquest'
   .options options
   .parse(args)
-config = mergeConfig opts, config
+config = _.merge opts, config
 
 printHeader = (text) ->
   console.log '########################################################'.gray
