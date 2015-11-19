@@ -7,7 +7,7 @@ nomnom = require 'nomnom'
 _ = require 'lodash'
 
 {findSql, findQuest} = require './hunter'
-{readConfig, mergeConfig} = require './config'
+readConfig = require './config'
 
 # Private: Split a list the first instance of an element
 #

@@ -8,7 +8,7 @@ module.exports =
   # * `tomlPath`: Path to the toml config file.
   #
   # Returns an {Object}.
-  readConfig: (tomlPath) ->
+  (tomlPath) ->
     tomlPath ?= process.env.CONFIG_PATH or "config.toml"
     if fs.existsSync tomlPath
       toml.parse fs.readFileSync(tomlPath)
