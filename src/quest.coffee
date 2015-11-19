@@ -7,13 +7,14 @@ Mustache = require 'mustache'
 Table = require 'cli-table'
 _ = require 'lodash'
 EventEmitter = require('events').EventEmitter
-Sync = require 'sync'
+co = require 'co'
+wait = require('co-flow').wait
+Q = require 'q'
 
 {findSql} = require './hunter'
 Splitter = require './split'
 {time} = require './timing'
-pg = require './pg'
-affqis = require './affqis'
+JDBCJVM = require './jdbc'
 
 # Private: Render text with a view, or return text if view isn't a thing.
 render = (text, view) ->
@@ -82,7 +83,6 @@ class Quest extends EventEmitter
     @sqlPath = path.join @questPath, 'sql'
     @options ?= {}
     @plugins ?= []
-    @databases ?= ["pg"]
     @connections = {}
 
     @opts = require('nomnom')
@@ -93,17 +93,18 @@ class Quest extends EventEmitter
     # In case there isn't an adventure method, use a reasonable default.
     @setAdventure()
 
-    Sync(
-      =>
-        @emit "connectStart", @databases
-        @setupDbClients()
-        @registerPlugins()
-        @client = pg.connect.sync(null, @client) if @client?
-        @emit "adventureStart"
-        @adventure()
-      (err, result) =>
-        @tearDownDbClients()
+    coResult = co =>
+      @emit "connectStart", @config.databases
+      yield @setupDbClients()
+      @registerPlugins()
+      @emit "adventureStart"
+      yield @adventure()
+
+    coResult
+      .then (result) =>
         @emit 'adventureFinish', result
+        @tearDownDbClients()
+      .catch (err) =>
         if err or @silentErrors
           @emit 'adventureError', err
           console.error "Errors occurred!".red.bold
@@ -111,8 +112,22 @@ class Quest extends EventEmitter
             console.error err.message.red.underline
             console.error err.stack.red
           console.error()
+          @tearDownDbClients()
           process.exit 1
-    )
+
+  setupDbClients: ->
+    for dbName, dbConfig of @config.databases
+      jvm = new JDBCJVM(dbConfig)
+      yield jvm.init()
+      connection = yield jvm.getConnection()
+      connection = connection.conn
+      @connections[dbName] =
+        connection: connection
+        jvm: jvm
+
+  tearDownDbClients: ->
+    for dbName, {connection: connection, jvm: jvm} of @connections
+      yield jvm.releaseConnection(connection)
 
   # Private: Register plugins specified in @plugins.
   #
@@ -124,33 +139,6 @@ class Quest extends EventEmitter
       unless _.startsWith(plugin, '/') or not _.startsWith(plugin, '.')
         plugin = path.join(@questPath, plugin)
       require(plugin)(@)
-
-  # Private: Set up connections to databases.
-  #
-  # Sets up the @connections object with db names to affqis connection ids.
-  # There's special handling of postgres until we have support in affqis.
-  setupDbClients: ->
-    @connections ?= {}
-    for db in @databases
-      console.log "Establishing a connection to #{db}...".gray.italic
-      if db == "pg"
-        @connections[db] = if @config.url?
-          @client = pg.createClient @config.url
-          @client
-        else
-          {host, port, db, user, pass} = @config
-          @client = pg.createClient host, port, db, user, pass
-          @client
-      else
-        @connections[db] = affqis.connect(db, @config.affqis)
-
-  # Private: Disconnect JDBC connections.
-  tearDownDbClients: ->
-    for db, connection of @connections
-      if db == "pg"
-        @client.end()
-      else
-        affqis.disconnect(connection)
 
   # Private: Setup the {Quest::adventure} function.
   #
@@ -259,7 +247,7 @@ class Quest extends EventEmitter
           console.error e.stack.red
           console.log "Retrying in #{opts.wait}ms.".red.bold
           console.log "Retries remaining: #{opts.times}".red.bold
-          Sync.sleep(opts.wait)
+          yield wait(opts.wait)
           opts.times -= 1
         else
           throw e
@@ -348,10 +336,12 @@ class Quest extends EventEmitter
   # or file passed. This object will have a `rows` property.
   sql: (queries, view, cb) ->
     split = true
-    target = @databases[0]
+    target = Object.keys(@config.databases)[0]
+
     if view instanceof Function
       cb = view
       view = null
+
     if typeof(queries) != 'string'
       split = queries.split if queries.split?
       target = queries.db if queries.db?
@@ -363,33 +353,39 @@ class Quest extends EventEmitter
           sqlPath = path.join @sqlPath, queries.file
         console.log ">>".blue.bold, "#{sqlPath}".blue.bold if queries.file
       rawQueries = queries.text or fs.readFileSync(sqlPath, encoding: 'utf-8')
+
     params ?= []
     queries = render rawQueries ? queries, view
+
     if split
       @emit 'splitStart', queries, view
-      queries = new Splitter(@splitter).split queries
+      splitter = new Splitter(@splitter)
+      queries = yield splitter.split(queries)
       @emit 'splitFinish', queries, view
+
     result = null
+    jvm = null
+    statement = null
     count = queries.length
-    time 'Total Execution Time', =>
-      @emit 'stepStart', queries, view
-      for i, query of queries
-        i = parseInt(i)
-        counter = i
-        console.log "\nNow executing #{counter+1} of #{count}"
-        console.log "\n#{query}\n".green
-        @emit 'queryStart', i, query
-        if cb?
-          @client.query(query, params, cb)
-        else
-          if @time
-            result = time 'Execution Time', =>
-              if target == "pg"
-                @client.query.sync(@client, query, params)
-              else
-                affqis.aql @connections[target], query
-        @emit 'queryFinish', i, query
-        console.log()
-      @emit 'stepFinish', queries, view
+    @emit 'stepStart', queries, view
+
+    for i, query of queries
+      i = parseInt(i)
+      counter = i
+      console.log "\nNow executing #{counter+1} of #{count}"
+      console.log "\n#{query}\n".green
+      @emit 'queryStart', i, query
+      connection = @connections[target]
+      jvm = connection.jvm
+      statement = yield connection.jvm.createStatement(connection.connection)
+      result = yield connection.jvm.executeQuery(statement, query, target == 'hive')
+
+      @emit 'queryFinish', i, query
       console.log()
-    result
+
+    @emit 'stepFinish', queries, view
+    console.log()
+    if result and isNaN(result)
+      yield jvm.resultSetToObj(result)
+    else
+      result
