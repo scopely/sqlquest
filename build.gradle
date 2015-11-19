@@ -8,15 +8,15 @@ repositories {
 }
 
 configurations {
-    hadoop
+    hive
 }
 
 dependencies {
-    hadoop 'org.apache.hadoop:hadoop-common:2.6.0-cdh5.4.4'
-    hadoop 'org.apache.hive:hive-jdbc:1.1.0-cdh5.4.4'
+    hive 'org.apache.hadoop:hadoop-common:2.6.0-cdh5.4.4'
+    hive 'org.apache.hive:hive-jdbc:1.1.0-cdh5.4.4'
 }
 
-task copyDrivers(type: Copy) {
-    from configurations.hadoop
+task copyHiveDrivers(type: Copy) {
+    from configurations.hive
     into "drivers/"
 }
