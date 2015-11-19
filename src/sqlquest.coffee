@@ -50,6 +50,10 @@ options =
   quest:
     position: 0
     help: "Which quest to embark on!"
+  database:
+    abbr: 'd'
+    help: "Can be passed multiple times to only configure specific databases."
+    list: true
   output:
     abbr: 'o'
     help: "Options are: table or json"
@@ -57,12 +61,12 @@ options =
   '':
     help: "Everything after this is passed to the quest."
 
-config = readConfig()
 opts = nomnom()
   .script 'sqlquest'
   .options options
   .parse(args)
-config = _.merge opts, config
+tomlConfig = readConfig opts.database
+config = _.merge opts, tomlConfig
 
 printHeader = (text) ->
   console.log '########################################################'.gray
