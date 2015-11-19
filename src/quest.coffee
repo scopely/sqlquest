@@ -13,7 +13,6 @@ Q = require 'q'
 
 {findSql} = require './hunter'
 Splitter = require './split'
-{time} = require './timing'
 JDBCJVM = require './jdbc'
 
 # Private: Render text with a view, or return text if view isn't a thing.
@@ -78,7 +77,6 @@ class Quest extends EventEmitter
     @silentErrors = false
     @splitter = config.splitter
     @output = config.output
-    @time = config.time
     @name = path.basename(@questPath)
     @sqlPath = path.join @questPath, 'sql'
     @options ?= {}

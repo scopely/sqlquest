@@ -47,11 +47,6 @@ options =
   splitter:
     abbr: 's'
     help: "Splitter API URL to use [http://sqlformat.org/api/v1/split]"
-  time:
-    abbr: 't'
-    flag: true
-    default: true
-    help: "Print the runtime of each query."
   quest:
     position: 0
     help: "Which quest to embark on!"
