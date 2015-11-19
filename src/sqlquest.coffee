@@ -33,7 +33,7 @@ options =
   user:
     abbr: 'u'
     help: "JDBC username"
-  pass:
+  password:
     abbr: 'P'
     help: "JDBC password"
     default: process.env.PGPASSWORD
