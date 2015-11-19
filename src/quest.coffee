@@ -361,6 +361,9 @@ class Quest extends EventEmitter
     count = queries.length
     @emit 'stepStart', queries, view
 
+    totalLabel = 'Total Time Elapsed For Step'
+
+    console.time totalLabel
     for i, query of queries
       i = parseInt(i)
       counter = i
@@ -369,11 +372,16 @@ class Quest extends EventEmitter
       @emit 'queryStart', i, query
       connection = @connections[target]
       jvm = connection.jvm
+
+      queryLabel = "Time Elapsed For Query #{i+1}"
+
+      console.time queryLabel
       statement = yield connection.jvm.createStatement(connection.connection)
       result = yield connection.jvm.executeQuery(statement, query, target == 'hive')
+      console.timeEnd queryLabel
 
       @emit 'queryFinish', i, query
-      console.log()
+    console.timeEnd totalLabel
 
     @emit 'stepFinish', queries, view
     console.log()
