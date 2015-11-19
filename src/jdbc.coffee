@@ -1,6 +1,7 @@
 Q = require 'q'
 co = require 'co'
 fs = require 'fs'
+ResultSet = require 'jdbc/lib/resultset'
 
 class JDBCJVM
   constructor: (@config) ->
@@ -30,28 +31,28 @@ class JDBCJVM
   createStatement: (conn) ->
     Q.ninvoke conn, "createStatement"
 
-  executeQuery: (statement, sql) ->
-    deferred = Q.defer()
-    statement.executeQuery sql, (err, res) ->
-      if err
-        deferred.reject err
-      else
-        res.toObject (err, obj) ->
-          if err
-            deferred.reject err
-          else
-            deferred.resolve obj
-    deferred.promise
+  logQueryLogs: (statement) ->
+    statement = statement._s
+    if statement.hasMoreLogsSync()
+      logs = statement.getQueryLogSync()
+      logLength = logs.sizeSync()
+      if logLength == 1
+        console.log logs.getSync(0)
+      else if logLength > 1
+        for i in [0..logLength-1]
+          console.log logs.getSync(i)
 
-co(->
-  jvm = new JDBCJVM
-    url: process.argv[2]
-    drivername: 'org.apache.hive.jdbc.HiveDriver'
-  yield jvm.init()
-  connection = yield jvm.getConnection()
-  connection = connection.conn
-  statement = yield jvm.createStatement(connection)
-  results = yield jvm.executeQuery(statement, process.argv[3])
-  yield jvm.releaseConnection(connection)
-  results
-).then(console.log).catch(console.error)
+  resultSetToObj: (resultset) ->
+    Q.ninvoke resultset, "toObject"
+
+  executeQuery: (statement, sql, logs) ->
+    promise = Q.ninvoke(statement, "execute", sql)
+    if logs
+      interval = setInterval (=> @logQueryLogs(statement)), 1000
+      promise.then (res) ->
+        clearInterval interval
+        res
+    else
+      promise
+
+module.exports = JDBCJVM
