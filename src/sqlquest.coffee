@@ -6,7 +6,7 @@ read = require 'read'
 nomnom = require 'nomnom'
 _ = require 'lodash'
 
-{findSql, findQuest} = require './hunter'
+{findQuest} = require './hunter'
 readConfig = require './config'
 
 # Private: Split a list the first instance of an element
@@ -54,6 +54,10 @@ options =
     abbr: 'd'
     help: "Can be passed multiple times to only configure specific databases."
     list: true
+  sqldir:
+    abbr: 'S'
+    help: "SQL directory name to look for .sql files in."
+    default: "sql"
   output:
     abbr: 'o'
     help: "Options are: table or json"

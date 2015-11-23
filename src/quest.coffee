@@ -78,7 +78,7 @@ class Quest extends EventEmitter
     @splitter = config.splitter
     @output = config.output
     @name = path.basename(@questPath)
-    @sqlPath = path.join @questPath, 'sql'
+    @sqlPath = path.join @questPath, config.sqldir
     @options ?= {}
     @plugins ?= []
     @connections = {}
