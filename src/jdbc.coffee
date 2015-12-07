@@ -44,7 +44,21 @@ class JDBCJVM
 
   processResultSet: (resultset) ->
     if resultset and isNaN(resultset)
-      Q.ninvoke resultset, "toObject"
+      deferred = Q.defer()
+      resultset.toObject (err, results) =>
+        if err
+          console.log err
+          deferred.reject err
+        else
+          rows = results.rows
+          results.rowsIter = results.rows
+          results.rows = () =>
+            collected = []
+            while row = rows.next().value
+              collected.push(row)
+            collected
+          deferred.resolve results
+      deferred.promise
     else
       Q(affected: resultset)
 
