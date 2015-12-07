@@ -1,7 +1,7 @@
 # Functions for splitting SQL with APIs and what not.
 request = require 'request'
-sync = require 'sync'
 _ = require 'lodash'
+Q = require 'q'
 
 module.exports =
 class Splitter
@@ -29,14 +29,12 @@ class Splitter
   # Returns an {Array} of {String}s which should be each individual query from
   # `text`.
   split: (text) ->
-    [response, body] = request.sync(request,
-      uri: @url,
-      method: "POST",
-      form: {sql: text}
+    deferred = Q.defer()
+    request({uri: @url, method: "POST", form: {sql: text}}, (err, response, body) ->
+      if response.statusCode != 200
+        deferred.reject(new Error(body))
+      else
+        parsed = JSON.parse(body).result.filter(_.identity).map (s) -> _.trimRight s, ';'
+        deferred.resolve(parsed)
     )
-    if response.statusCode != 200
-      throw
-        name: "SplitError"
-        status: response.statusCode
-        message: body
-    JSON.parse(body).result.filter(_.identity).map (s) -> _.trimRight s, ';'
+    deferred.promise
