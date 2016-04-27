@@ -6,6 +6,10 @@ ResultSet = require 'jdbc/lib/resultset'
 class JDBCJVM
   constructor: (@config) ->
     jvm = require 'jdbc/lib/jinst'
+    jvm.addOption '-Dsun.security.krb5.debug=true'
+    jvm.addOption '-Dsun.security.jgss.debug=true'
+    jvm.addOption '-Djavax.security.auth.useSubjectCredsOnly=false'
+    jvm.addOption '-Djava.security.krb5.conf=/etc/krb5.conf'    
 
     if not jvm.isJvmCreated()
       deps = fs.readdirSync('drivers/').map (dep) ->
