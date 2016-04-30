@@ -5,10 +5,9 @@ colors = require 'colors'
 read = require 'read'
 nomnom = require 'nomnom'
 _ = require 'lodash'
-Sync = require 'sync'
 
-{findSql, findQuest} = require './hunter'
-{readConfig, addAffqisOpts, mergeConfig} = require './config'
+{findQuest} = require './hunter'
+readConfig = require './config'
 
 # Private: Split a list the first instance of an element
 #
@@ -33,24 +32,14 @@ splitAt = (target, items) ->
 options =
   user:
     abbr: 'u'
-    help: "PG/Redshift username"
-  pass:
+    help: "JDBC username"
+  password:
     abbr: 'P'
-    help: "PG/Redshift password"
+    help: "JDBC password"
     default: process.env.PGPASSWORD
-  host:
-    abbr: 'H'
-    help: 'PG/Redshift host'
-  port:
-    abbr: 'p'
-    help: "PG/Redshift port"
-    default: 5432
   url:
     abbr: 'U'
-    help: "PG/Redshift URL (postgres://user:pass@host:port/db)"
-  db:
-    abbr: 'd'
-    help: "PG/Redshift DB"
+    help: "JDBC URL to connect to (jdbc:postgresql://host/db)"
   quests:
     abbr: 'q'
     default: 'quests'
@@ -58,14 +47,17 @@ options =
   splitter:
     abbr: 's'
     help: "Splitter API URL to use [http://sqlformat.org/api/v1/split]"
-  time:
-    abbr: 't'
-    flag: true
-    default: true
-    help: "Print the runtime of each query."
   quest:
     position: 0
     help: "Which quest to embark on!"
+  database:
+    abbr: 'd'
+    help: "Can be passed multiple times to only configure specific databases."
+    list: true
+  sqldir:
+    abbr: 'S'
+    help: "SQL directory name to look for .sql files in."
+    default: "sql"
   output:
     abbr: 'o'
     help: "Options are: table or json"
@@ -73,13 +65,12 @@ options =
   '':
     help: "Everything after this is passed to the quest."
 
-config = readConfig()
-options = addAffqisOpts(options, config)
 opts = nomnom()
   .script 'sqlquest'
   .options options
   .parse(args)
-config = mergeConfig opts, config
+tomlConfig = readConfig opts.database
+config = _.merge opts, tomlConfig
 
 printHeader = (text) ->
   console.log '########################################################'.gray

@@ -1,6 +1,6 @@
 {
   "name": "sqlquest",
-  "version": "0.7.1",
+  "version": "1.0.0",
   "description": "A sql job runner/DSL",
   "main": "./src/quest.coffee",
   "bin": "./bin/sqlquest",
@@ -9,19 +9,20 @@
   "dependencies": {
     "autobahn": "0.9.6",
     "cli-table": "0.3.1",
-    "coffee-script": "1.9.0",
+    "co": "4.6.0",
+    "co-flow": "^1.0.1",
+    "coffee-script": "1.10.0",
     "colors": "1.1.0",
-    "fibers": "1.0.5",
+    "jdbc": "raynes/node-jdbc",
     "lodash": "3.8.0",
     "moment": "2.10.2",
     "mustache": "2.0.0",
     "nomnom": "1.8.1",
-    "pg": "4.3.0",
-    "pg-native": "1.8.0",
+    "q": "1.4.1",
     "read": "1.0.5",
     "request": "2.55.0",
-    "sync": "0.2.5",
-    "toml": "2.2.0"
+    "toml": "2.2.0",
+    "krb5": "^0.1.0"
   },
   "devDependencies": {
     "grunt": "^0.4.5",
